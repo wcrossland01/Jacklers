@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jacklers — Rugby Intelligence</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#0a0f0d;color:#e8ede9;min-height:100vh}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:0.5px solid rgba(255,255,255,0.1);position:sticky;top:0;background:rgba(10,15,13,0.97);z-index:100}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:#c8f562}
+.nav-links{display:flex;gap:1.5rem;list-style:none;font-size:13px;font-weight:500;color:rgba(232,237,233,0.6)}
+.nav-links li{cursor:pointer;transition:color 0.2s}.nav-links li:hover{color:#c8f562}
+.nav-btn{background:#c8f562;color:#0a0f0d;border:none;padding:8px 18px;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif}
+.hero{padding:4rem 2rem 3rem;border-bottom:0.5px solid rgba(255,255,255,0.08);max-width:1200px;margin:0 auto}
+.hero-tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:#c8f562;text-transform:uppercase;margin-bottom:1rem}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:80px;line-height:1;letter-spacing:2px;margin-bottom:1rem}
+.hero-title span{color:#c8f562}
+.hero-sub{font-size:16px;color:rgba(232,237,233,0.6);max-width:560px;line-height:1.7;margin-bottom:2rem}
+.btn-primary{background:#c8f562;color:#0a0f0d;border:none;padding:14px 28px;border-radius:4px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:12px}
+.btn-ghost{background:transparent;color:rgba(232,237,233,0.7);border:0.5px solid rgba(255,255,255,0.2);padding:14px 28px;border-radius:4px;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.stats{display:flex;gap:3rem;margin-top:3rem;padding-top:2rem;border-top:0.5px solid rgba(255,255,255,0.08)}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:#c8f562;letter-spacing:1px}
+.stat-label{font-size:11px;color:rgba(232,237,233,0.4);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.section{padding:3rem 2rem;border-bottom:0.5px solid rgba(255,255,255,0.08);max-width:1200px;margin:0 auto}
+.section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:rgba(232,237,233,0.3);text-transform:uppercase;margin-bottom:1rem}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;color:#c8f562;margin-bottom:1.5rem}
+.pillars{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.pillar{border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:1.25rem 1rem;cursor:pointer;transition:all 0.2s}
+.pillar:hover,.pillar.active{border-color:#c8f562;background:rgba(200,245,98,0.05)}
+.pillar i{font-size:20px;margin-bottom:10px;display:block;color:rgba(232,237,233,0.4)}
+.pillar:hover i,.pillar.active i{color:#c8f562}
+.pillar-name{font-size:12px;font-weight:500;color:rgba(232,237,233,0.7)}
+.pillar-desc{font-size:11px;color:rgba(232,237,233,0.3);margin-top:4px;line-height:1.4}
+.articles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.article{border:0.5px solid rgba(255,255,255,0.08);border-radius:6px;padding:1.25rem;cursor:pointer;transition:all 0.2s}
+.article:hover{border-color:rgba(200,245,98,0.3)}
+.article-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#c8f562;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.lock{background:rgba(200,245,98,0.15);color:#c8f562;font-size:8px;padding:2px 6px;border-radius:3px;letter-spacing:1px}
+.article-headline{font-size:14px;font-weight:500;line-height:1.5;color:#e8ede9;margin-bottom:8px}
+.article-meta{font-size:11px;color:rgba(232,237,233,0.3)}
+.fixture{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:8px;padding:0.75rem 0;border-bottom:0.5px solid rgba(255,255,255,0.06)}
+.fixture:last-child{border-bottom:none}
+.team{font-size:13px;font-weight:500}.team.away{text-align:right}
+.odds-group{display:flex;gap:4px;justify-content:center}
+.odd{background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:3px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;color:rgba(232,237,233,0.7);cursor:pointer;min-width:52px;text-align:center;transition:all 0.15s}
+.odd:hover{border-color:#c8f562;color:#c8f562}
+.odd.value{background:rgba(200,245,98,0.12);border-color:rgba(200,245,98,0.4);color:#c8f562}
+.value-tag{font-size:8px;letter-spacing:1px;text-transform:uppercase}
+.live-badge{background:rgba(232,68,68,0.15);color:#f09595;font-size:10px;padding:3px 8px;border-radius:3px;font-family:'DM Mono',monospace;letter-spacing:1px;display:flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#f09595;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.players{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.player{border:0.5px solid rgba(255,255,255,0.08);border-radius:6px;padding:1rem;text-align:center;cursor:pointer;transition:all 0.2s}
+.player:hover{border-color:rgba(200,245,98,0.3)}
+.player-pos{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;color:rgba(232,237,233,0.3);margin-bottom:6px}
+.player-name{font-size:12px;font-weight:500;color:#e8ede9;margin-bottom:4px}
+.player-club{font-size:10px;color:rgba(232,237,233,0.3);margin-bottom:8px}
+.player-score{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#c8f562}
+.player-label{font-size:9px;color:rgba(232,237,233,0.3);letter-spacing:1px;text-transform:uppercase}
+.form-bar{display:flex;gap:2px;justify-content:center;margin-top:6px}
+.dot{width:6px;height:6px;border-radius:50%}
+.w{background:#c8f562}.l{background:rgba(232,68,68,0.6)}.d{background:rgba(232,237,233,0.2)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,237,233,0.3);padding:0 0.5rem 0.75rem;border-bottom:0.5px solid rgba(255,255,255,0.08)}
+td{padding:0.6rem 0.5rem;border-bottom:0.5px solid rgba(255,255,255,0.04);color:rgba(232,237,233,0.8)}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.rank{font-family:'DM Mono',monospace;color:rgba(232,237,233,0.3);font-size:11px}
+.trend{font-family:'DM Mono',monospace;font-size:11px}
+.up{color:#c8f562}.down{color:#f09595}.same{color:rgba(232,237,233,0.3)}
+.subscribe{padding:4rem 2rem;text-align:center;max-width:1200px;margin:0 auto}
+.sub-title{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:2px;margin-bottom:0.5rem}
+.sub-title span{color:#c8f562}
+.sub-desc{font-size:15px;color:rgba(232,237,233,0.5);margin-bottom:2rem}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:500px;margin:0 auto}
+.plan{border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:1.5rem;text-align:left;cursor:pointer;transition:all 0.2s}
+.plan:hover{border-color:rgba(200,245,98,0.3)}
+.plan.featured{border-color:#c8f562;background:rgba(200,245,98,0.05)}
+.plan-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:'DM Mono',monospace;color:rgba(232,237,233,0.4);margin-bottom:8px}
+.plan.featured .plan-label{color:#c8f562}
+.plan-price{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#e8ede9;margin-bottom:4px}
+.plan-period{font-size:11px;color:rgba(232,237,233,0.3);margin-bottom:12px}
+.plan-features{list-style:none;font-size:12px;color:rgba(232,237,233,0.5);line-height:2}
+.plan-features li::before{content:'→ ';color:#c8f562}
+footer{padding:2rem;border-top:0.5px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:rgba(232,237,233,0.3)}
+.footer-tag{font-size:11px;color:rgba(232,237,233,0.2);font-family:'DM Mono',monospace;letter-spacing:1px}
+.value-box{margin-top:1rem;padding:0.75rem 1rem;background:rgba(200,245,98,0.06);border:0.5px solid rgba(200,245,98,0.2);border-radius:6px;font-size:12px;color:rgba(232,237,233,0.6)}
+.value-box-label{font-size:11px;color:#c8f562;font-family:'DM Mono',monospace;letter-spacing:1px;margin-bottom:4px}
+.header-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">JACKLERS</div>
+  <ul class="nav-links">
+    <li>Analysis</li>
+    <li>Betting</li>
+    <li>Fantasy</li>
+    <li>Recruitment</li>
+    <li>Schoolboy</li>
+  </ul>
+  <button class="nav-btn">Subscribe</button>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">// Rugby intelligence platform</div>
+  <h1 class="hero-title">GET THERE<br><span>FIRST.</span></h1>
+  <p class="hero-sub">Premiership, Championship and international rugby — analysis, betting value, fantasy picks, recruitment intel and schoolboy talent. All in one place.</p>
+  <button class="btn-primary">Start reading free</button>
+  <button class="btn-ghost">See what's inside</button>
+  <div class="stats">
+    <div><div class="stat-val">5</div><div class="stat-label">Coverage pillars</div></div>
+    <div><div class="stat-val">3×</div><div class="stat-label">Weekly issues</div></div>
+    <div><div class="stat-val">£8</div><div class="stat-label">Per month</div></div>
+    <div><div class="stat-val">100%</div><div class="stat-label">Independent</div></div>
+  </div>
+</div>
+
+<div style="max-width:1200px;margin:0 auto">
+<div class="section">
+  <div class="section-label">// Coverage areas</div>
+  <div class="pillars">
+    <div class="pillar active"><i class="ti ti-chart-bar"></i><div class="pillar-name">Analysis</div><div class="pillar-desc">Tactical breakdowns across all levels</div></div>
+    <div class="pillar"><i class="ti ti-coin"></i><div class="pillar-name">Betting</div><div class="pillar-desc">Value odds and data-driven previews</div></div>
+    <div class="pillar"><i class="ti ti-trophy"></i><div class="pillar-name">Fantasy</div><div class="pillar-desc">Weekly picks and differential alerts</div></div>
+    <div class="pillar"><i class="ti ti-transfer"></i><div class="pillar-name">Recruitment</div><div class="pillar-desc">Transfer intel and contract analysis</div></div>
+    <div class="pillar"><i class="ti ti-school"></i><div class="pillar-name">Schoolboy</div><div class="pillar-desc">Talent pipeline and school rankings</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="header-row">
+    <div class="section-title">LATEST INTELLIGENCE</div>
+    <span style="font-size:11px;color:rgba(232,237,233,0.3);font-family:'DM Mono',monospace;letter-spacing:1px">WEEK 18 · PREMIERSHIP</span>
+  </div>
+  <div class="articles">
+    <div class="article">
+      <div class="article-tag">Analysis</div>
+      <div class="article-headline">Why Bath's defensive line speed is the most underrated tactical shift of the season</div>
+      <div class="article-meta">8 min read · Today</div>
+    </div>
+    <div class="article">
+      <div class="article-tag">Betting <span class="lock">PREMIUM</span></div>
+      <div class="article-headline">Three value bets for this weekend's Premiership fixtures — data says the market is wrong</div>
+      <div class="article-meta">6 min read · Today</div>
+    </div>
+    <div class="article">
+      <div class="article-tag">Recruitment <span class="lock">PREMIUM</span></div>
+      <div class="article-headline">The Championship loosehead nobody is talking about — and why two Premiership clubs are watching</div>
+      <div class="article-meta">5 min read · Yesterday</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="header-row">
+    <div class="section-title">BETTING RADAR</div>
+    <div class="live-badge"><div class="live-dot"></div> Live odds</div>
+  </div>
+  <div class="section-label">// Value highlighted — updated every 30 mins</div>
+  <div class="fixture">
+    <div class="team">Bath Rugby</div>
+    <div class="odds-group">
+      <div class="odd value">1.72<div class="value-tag">VALUE</div></div>
+      <div class="odd">4.50</div>
+      <div class="odd">5.20</div>
+    </div>
+    <div class="team away">Northampton</div>
+    <div style="font-size:10px;color:rgba(232,237,233,0.25);font-family:'DM Mono',monospace">Sat 15:00</div>
+  </div>
+  <div class="fixture">
+    <div class="team">Saracens</div>
+    <div class="odds-group">
+      <div class="odd">2.10</div>
+      <div class="odd">4.20</div>
+      <div class="odd value">3.80<div class="value-tag">VALUE</div></div>
+    </div>
+    <div class="team away">Leicester</div>
+    <div style="font-size:10px;color:rgba(232,237,233,0.25);font-family:'DM Mono',monospace">Sat 17:30</div>
+  </div>
+  <div class="fixture">
+    <div class="team">Harlequins</div>
+    <div class="odds-group">
+      <div class="odd">1.95</div>
+      <div class="odd value">4.10<div class="value-tag">VALUE</div></div>
+      <div class="odd">4.30</div>
+    </div>
+    <div class="team away">Sale Sharks</div>
+    <div style="font-size:10px;color:rgba(232,237,233,0.25);font-family:'DM Mono',monospace">Sun 14:00</div>
+  </div>
+  <div class="value-box">
+    <div class="value-box-label">// JACKLERS MODEL THIS WEEK</div>
+    Model finds 3 value bets across 6 Premiership fixtures. Full analysis and staking guide for premium subscribers.
+  </div>
+</div>
+
+<div class="section">
+  <div class="header-row">
+    <div class="section-title">FANTASY PICKS</div>
+    <span style="font-size:11px;color:rgba(232,237,233,0.3);font-family:'DM Mono',monospace;letter-spacing:1px">GW18 · PREMIUM</span>
+  </div>
+  <div class="section-label">// Jacklers model ratings — form + fixture + price value</div>
+  <div class="players">
+    <div class="player">
+      <div class="player-pos">Fly Half</div>
+      <div class="player-name">Marcus Smith</div>
+      <div class="player-club">Harlequins</div>
+      <div class="player-score">9.4</div>
+      <div class="player-label">Jacklers Rating</div>
+      <div class="form-bar"><div class="dot w"></div><div class="dot w"></div><div class="dot l"></div><div class="dot w"></div><div class="dot w"></div></div>
+    </div>
+    <div class="player">
+      <div class="player-pos">No. 8</div>
+      <div class="player-name">Ben Earl</div>
+      <div class="player-club">Saracens</div>
+      <div class="player-score">8.7</div>
+      <div class="player-label">Jacklers Rating</div>
+      <div class="form-bar"><div class="dot w"></div><div class="dot w"></div><div class="dot w"></div><div class="dot d"></div><div class="dot w"></div></div>
+    </div>
+    <div class="player">
+      <div class="player-pos">Winger</div>
+      <div class="player-name">I. Feyi-Waboso</div>
+      <div class="player-club">Exeter Chiefs</div>
+      <div class="player-score">8.2</div>
+      <div class="player-label">Jacklers Rating</div>
+      <div class="form-bar"><div class="dot w"></div><div class="dot l"></div><div class="dot w"></div><div class="dot w"></div><div class="dot w"></div></div>
+    </div>
+    <div class="player" style="opacity:0.4;position:relative">
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:2">
+        <i class="ti ti-lock" style="font-size:22px;color:#c8f562"></i>
+        <div style="font-size:9px;color:#c8f562;margin-top:4px;font-family:'DM Mono',monospace;letter-spacing:1px">PREMIUM</div>
+      </div>
+      <div class="player-pos">Flanker</div>
+      <div class="player-name">Differential Pick</div>
+      <div class="player-club">????</div>
+      <div class="player-score">??</div>
+      <div class="player-label">Jacklers Rating</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="header-row">
+    <div class="section-title">SCHOOL RANKINGS</div>
+    <span style="font-size:11px;color:rgba(232,237,233,0.3);font-family:'DM Mono',monospace;letter-spacing:1px">U18 · NATIONAL</span>
+  </div>
+  <div class="section-label">// Updated weekly — only comprehensive national tracker</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:32px">#</th>
+        <th>School</th>
+        <th>Region</th>
+        <th>P</th><th>W</th><th>Pts</th>
+        <th>Form</th>
+        <th>Move</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="rank">1</td><td style="font-weight:500;color:#e8ede9">Millfield</td>
+        <td style="color:rgba(232,237,233,0.4);font-size:11px">SW</td>
+        <td>12</td><td>11</td><td>54</td>
+        <td><div class="form-bar" style="justify-content:flex-start"><div class="dot w"></div><div class="dot w"></div><div class="dot w"></div><div class="dot w"></div><div class="dot l"></div></div></td>
+        <td class="trend same">—</td>
+      </tr>
+      <tr>
+        <td class="rank">2</td><td style="font-weight:500;color:#e8ede9">Wellington College</td>
+        <td style="color:rgba(232,237,233,0.4);font-size:11px">SE</td>
+        <td>11</td><td>10</td><td>49</td>
+        <td><div class="form-bar" style="justify-content:flex-start"><div class="dot w"></div><div class="dot w"></div><div class="dot l"></div><div class="dot w"></div><div class="dot w"></div></div></td>
+        <td class="trend up">↑ 1</td>
+      </tr>
+      <tr>
+        <td class="rank">3</td><td style="font-weight:500;color:#e8ede9">Sedbergh</td>
+        <td style="color:rgba(232,237,233,0.4);font-size:11px">N</td>
+        <td>12</td><td>9</td><td>44</td>
+        <td><div class="form-bar" style="justify-content:flex-start"><div class="dot w"></div><div class="dot l"></div><div class="dot w"></div><div class="dot w"></div><div class="dot w"></div></div></td>
+        <td class="trend down">↓ 1</td>
+      </tr>
+      <tr>
+        <td class="rank">4</td><td style="font-weight:500;color:#e8ede9">Hartpury College</td>
+        <td style="color:rgba(232,237,233,0.4);font-size:11px">SW</td>
+        <td>10</td><td>8</td><td>38</td>
+        <td><div class="form-bar" style="justify-content:flex-start"><div class="dot w"></div><div class="dot w"></div><div class="dot w"></div><div class="dot l"></div><div class="dot w"></div></div></td>
+        <td class="trend up">↑ 2</td>
+      </tr>
+      <tr>
+        <td class="rank">5</td><td style="font-weight:500;color:#e8ede9">Clifton College</td>
+        <td style="color:rgba(232,237,233,0.4);font-size:11px">SW</td>
+        <td>11</td><td>8</td><td>36</td>
+        <td><div class="form-bar" style="justify-content:flex-start"><div class="dot w"></div><div class="dot w"></div><div class="dot d"></div><div class="dot w"></div><div class="dot l"></div></div></td>
+        <td class="trend same">—</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<div class="subscribe">
+  <div class="sub-title">GET THERE <span>FIRST.</span></div>
+  <div class="sub-desc">Join the sharpest rugby minds in England. Free tier available — no card required.</div>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-label">Free</div>
+      <div class="plan-price">£0</div>
+      <div class="plan-period">forever</div>
+      <ul class="plan-features">
+        <li>Weekly analysis piece</li>
+        <li>School rankings</li>
+        <li>Odds radar (delayed)</li>
+      </ul>
+    </div>
+    <div class="plan featured">
+      <div class="plan-label">Premium</div>
+      <div class="plan-price">£8</div>
+      <div class="plan-period">per month · or £70/year</div>
+      <ul class="plan-features">
+        <li>All analysis content</li>
+        <li>Betting value picks</li>
+        <li>Fantasy differential alerts</li>
+        <li>Recruitment intel</li>
+        <li>Schoolboy talent watch</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">JACKLERS</div>
+  <div class="footer-tag">// Rugby intelligence for those who get there first</div>
+</footer>
+
+</body>
+</html>
