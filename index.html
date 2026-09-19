@@ -1,414 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en-GB">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jacklers — English Rugby Intelligence</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;500;600&family=Source+Serif+4:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-<style>
-:root {
-  --navy: #0d1f3c;
-  --navy-mid: #1a3560;
-  --navy-light: #e8eef6;
-  --cream: #faf9f7;
-  --white: #ffffff;
-  --accent: #c8102e;
-  --accent-light: #fdf0f2;
-  --text-primary: #0d1f3c;
-  --text-secondary: #4a5568;
-  --text-muted: #8896a5;
-  --border: #e2e8f0;
-  --border-light: #f0f4f8;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Source Sans 3',sans-serif;background:var(--cream);color:var(--text-primary);line-height:1.6}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jacklers: independent rugby journalism, analysis and data</title>
+<meta name="description" content="Independent rugby journalism, analysis, data and talent intelligence. The rugby publication serious fans have been waiting for.">
+<link rel="canonical" href="https://jacklers.co.uk/">
 
-/* NAV */
-nav{background:var(--navy);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;height:60px}
-.nav-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--white);letter-spacing:1px}
-.nav-logo span{color:var(--accent)}
-.nav-links{display:flex;gap:0;list-style:none}
-.nav-links li a{display:block;padding:0 1.25rem;height:60px;line-height:60px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.7);text-decoration:none;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.2s;border-bottom:3px solid transparent}
-.nav-links li a:hover{color:var(--white);border-bottom-color:var(--accent)}
-.nav-links li a.active{color:var(--white);border-bottom-color:var(--accent)}
-.nav-subscribe{background:var(--accent);color:var(--white);border:none;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif;letter-spacing:0.5px;transition:opacity 0.2s}
-.nav-subscribe:hover{opacity:0.9}
-
-/* HERO */
-.hero{background:var(--navy);padding:4rem 2rem;border-bottom:4px solid var(--accent)}
-.hero-inner{max-width:900px;margin:0 auto}
-.hero-eyebrow{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1.25rem}
-.hero-headline{font-family:'Playfair Display',serif;font-size:52px;font-weight:900;line-height:1.1;color:var(--white);margin-bottom:1.25rem;max-width:700px}
-.hero-sub{font-size:17px;color:rgba(255,255,255,0.65);max-width:560px;line-height:1.7;margin-bottom:2rem;font-weight:300}
-.hero-actions{display:flex;gap:12px;align-items:center}
-.btn-primary{background:var(--accent);color:var(--white);border:none;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif;letter-spacing:0.5px;transition:opacity 0.2s}
-.btn-primary:hover{opacity:0.9}
-.btn-outline{background:transparent;color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.3);padding:12px 28px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Source Sans 3',sans-serif;transition:all 0.2s}
-.btn-outline:hover{border-color:white;color:white}
-
-/* MAIN LAYOUT */
-.main{max-width:1100px;margin:0 auto;padding:3rem 2rem;display:grid;grid-template-columns:1fr 320px;gap:3rem}
-
-/* ARTICLES */
-.section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:0.75rem;border-bottom:2px solid var(--navy)}
-.section-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--navy)}
-.section-link{font-size:12px;font-weight:600;color:var(--accent);text-decoration:none;letter-spacing:0.5px;text-transform:uppercase}
-
-.article-lead{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:1px}
-.article-card{background:var(--white);padding:1.5rem;cursor:pointer;transition:background 0.15s}
-.article-card:hover{background:#fafbfc}
-.article-card.featured{grid-column:1/-1;padding:2rem}
-.article-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:0.6rem}
-.article-headline{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;line-height:1.3;color:var(--navy);margin-bottom:0.5rem}
-.article-card.featured .article-headline{font-size:26px}
-.article-excerpt{font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:0.75rem;font-family:'Source Serif 4',serif;font-style:italic}
-.article-meta{font-size:11px;color:var(--text-muted);font-weight:500;letter-spacing:0.5px;text-transform:uppercase}
-.premium-badge{display:inline-block;background:var(--navy);color:var(--white);font-size:9px;font-weight:700;letter-spacing:1.5px;padding:2px 7px;margin-left:8px;vertical-align:middle}
-
-.article-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-top:1px}
-
-/* SIDEBAR */
-.sidebar{}
-.sidebar-block{background:var(--white);padding:1.25rem;margin-bottom:1.5rem;border-top:3px solid var(--navy)}
-.sidebar-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)}
-
-.pillar-list{list-style:none}
-.pillar-item{padding:0.6rem 0;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:10px;cursor:pointer;transition:color 0.15s}
-.pillar-item:last-child{border-bottom:none}
-.pillar-item:hover .pillar-name{color:var(--accent)}
-.pillar-icon{width:32px;height:32px;background:var(--navy-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.pillar-icon i{font-size:16px;color:var(--navy)}
-.pillar-name{font-size:13px;font-weight:600;color:var(--navy)}
-.pillar-desc{font-size:11px;color:var(--text-muted)}
-
-.school-row{display:flex;align-items:center;gap:10px;padding:0.5rem 0;border-bottom:1px solid var(--border-light);font-size:13px}
-.school-row:last-child{border-bottom:none}
-.school-rank{font-weight:700;color:var(--text-muted);font-size:11px;width:16px;flex-shrink:0}
-.school-name{font-weight:600;color:var(--navy);flex:1}
-.school-region{font-size:11px;color:var(--text-muted)}
-.school-form{display:flex;gap:2px;margin-left:auto}
-.form-dot{width:7px;height:7px;border-radius:50%}
-.form-dot.w{background:#2d7a4f}
-.form-dot.l{background:#c8102e}
-.form-dot.d{background:#cbd5e0}
-
-.subscribe-block{background:var(--navy);padding:1.5rem;border-top:3px solid var(--accent)}
-.subscribe-block .sidebar-title{color:var(--white);border-bottom-color:rgba(255,255,255,0.15)}
-.subscribe-desc{font-size:13px;color:rgba(255,255,255,0.65);margin-bottom:1rem;line-height:1.6}
-.subscribe-input{width:100%;padding:10px 12px;font-size:13px;border:none;font-family:'Source Sans 3',sans-serif;margin-bottom:8px}
-.subscribe-btn{width:100%;background:var(--accent);color:var(--white);border:none;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif;letter-spacing:0.5px}
-.free-note{font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;text-align:center}
-
-/* ABOUT STRIP */
-.about-strip{background:var(--navy-light);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:2.5rem 2rem;margin-top:0}
-.about-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:2rem}
-.about-item{}
-.about-item-title{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:0.5rem}
-.about-item-text{font-size:14px;color:var(--text-secondary);line-height:1.6}
-
-/* FOOTER */
-footer{background:var(--navy);padding:2rem;margin-top:0}
-.footer-inner{max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
-.footer-logo{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:rgba(255,255,255,0.4)}
-.footer-logo span{color:var(--accent)}
-.footer-text{font-size:12px;color:rgba(255,255,255,0.3);letter-spacing:0.5px}
-
-/* PAGE SECTIONS - shown when nav tabs clicked */
-.page-section{display:none;max-width:1100px;margin:0 auto;padding:2rem}
-.page-section.active{display:block}
-.homepage{display:block}
-.homepage.hidden{display:none}
-</style>
+<meta name="theme-color" content="#0A1120">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jacklers">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Jacklers: independent rugby journalism, analysis and data">
+<meta property="og:description" content="Independent rugby journalism, analysis, data and talent intelligence. The rugby publication serious fans have been waiting for.">
+<meta property="og:url" content="https://jacklers.co.uk/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Jacklers: independent rugby journalism, analysis and data">
+<meta name="twitter:description" content="Independent rugby journalism, analysis, data and talent intelligence. The rugby publication serious fans have been waiting for.">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
+<link rel="stylesheet" href="/assets/css/site.css">
 </head>
 <body>
-
-<nav>
-  <div class="nav-logo">JACKLERS<span>.</span></div>
-  <ul class="nav-links">
-    <li><a href="#" class="active" onclick="showPage('home',this)">Home</a></li>
-    <li><a href="#" onclick="showPage('analysis',this)">Analysis</a></li>
-    <li><a href="#" onclick="showPage('fantasy',this)">Fantasy</a></li>
-    <li><a href="#" onclick="showPage('recruitment',this)">Recruitment</a></li>
-    <li><a href="#" onclick="showPage('schoolboy',this)">Schoolboy</a></li>
-    <li><a href="#" onclick="showPage('betting',this)">Betting</a></li>
-    <li><a href="#" onclick="showPage('stats',this)">Statistics</a></li>
-  </ul>
-  <button class="nav-subscribe">Subscribe</button>
-</nav>
-
-<!-- HOMEPAGE -->
-<div class="homepage" id="page-home">
-
-  <div class="hero">
-    <div class="hero-inner">
-      <div class="hero-eyebrow">English Rugby · Intelligence · Analysis</div>
-      <h1 class="hero-headline">The rugby publication serious fans have been waiting for.</h1>
-      <p class="hero-sub">Independent analysis, recruitment intelligence, fantasy picks and schoolboy coverage — across the Premiership, Championship and international rugby.</p>
-      <div class="hero-actions">
-        <button class="btn-primary">Read for free</button>
-        <button class="btn-outline">See premium →</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="main">
-    <div class="content">
-
-      <div class="section-header">
-        <div class="section-title">Latest Analysis</div>
-        <a href="#" class="section-link" onclick="showPage('analysis',null)">All articles →</a>
-      </div>
-
-      <div class="article-lead">
-        <div class="article-card featured">
-          <div class="article-tag">Analysis · International</div>
-          <div class="article-headline">Why England's defensive structure is the most significant tactical shift of the Eddie Jones era — and what Warren Gatland has already noticed</div>
-          <div class="article-excerpt">A deep dive into the numbers behind England's improved line speed and what it means for the autumn internationals.</div>
-          <div class="article-meta">12 min read · Today</div>
-        </div>
-        <div class="article-card">
-          <div class="article-tag">Analysis · Premiership</div>
-          <div class="article-headline">Bath's lineout has become the most clinical in the Premiership. Here's how they built it.</div>
-          <div class="article-excerpt">Three seasons of data unpacked.</div>
-          <div class="article-meta">8 min read · Yesterday</div>
-        </div>
-        <div class="article-card">
-          <div class="article-tag">Recruitment <span class="premium-badge">PREMIUM</span></div>
-          <div class="article-headline">The Championship loosehead nobody is talking about — and why two Premiership clubs are watching closely</div>
-          <div class="article-excerpt">Our recruitment desk has been tracking him since September.</div>
-          <div class="article-meta">6 min read · 2 days ago</div>
-        </div>
-      </div>
-
-      <div style="margin-top:2.5rem">
-        <div class="section-header">
-          <div class="section-title">Recruitment & Transfers</div>
-          <a href="#" class="section-link" onclick="showPage('recruitment',null)">All intel →</a>
-        </div>
-        <div class="article-grid">
-          <div class="article-card">
-            <div class="article-tag">Recruitment <span class="premium-badge">PREMIUM</span></div>
-            <div class="article-headline">Sale Sharks are quietly building something — and the transfer window tells the story</div>
-            <div class="article-meta">5 min read · Today</div>
-          </div>
-          <div class="article-card">
-            <div class="article-tag">Schoolboy</div>
-            <div class="article-headline">The Millfield fly half drawing comparisons to a current England international</div>
-            <div class="article-meta">4 min read · Yesterday</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="sidebar">
-
-      <div class="sidebar-block">
-        <div class="sidebar-title">What we cover</div>
-        <ul class="pillar-list">
-          <li class="pillar-item" onclick="showPage('analysis',null)">
-            <div class="pillar-icon"><i class="ti ti-writing"></i></div>
-            <div><div class="pillar-name">Analysis</div><div class="pillar-desc">Tactical breakdowns, match reviews</div></div>
-          </li>
-          <li class="pillar-item" onclick="showPage('fantasy',null)">
-            <div class="pillar-icon"><i class="ti ti-trophy"></i></div>
-            <div><div class="pillar-name">Fantasy Rugby</div><div class="pillar-desc">Weekly picks, differentials, ratings</div></div>
-          </li>
-          <li class="pillar-item" onclick="showPage('recruitment',null)">
-            <div class="pillar-icon"><i class="ti ti-transfer"></i></div>
-            <div><div class="pillar-name">Recruitment</div><div class="pillar-desc">Transfer intel, contract analysis</div></div>
-          </li>
-          <li class="pillar-item" onclick="showPage('schoolboy',null)">
-            <div class="pillar-icon"><i class="ti ti-school"></i></div>
-            <div><div class="pillar-name">Schoolboy</div><div class="pillar-desc">Talent pipeline, school rankings</div></div>
-          </li>
-          <li class="pillar-item" onclick="showPage('betting',null)">
-            <div class="pillar-icon"><i class="ti ti-chart-line"></i></div>
-            <div><div class="pillar-name">Betting</div><div class="pillar-desc">Value odds, data-driven previews</div></div>
-          </li>
-          <li class="pillar-item" onclick="showPage('stats',null)">
-            <div class="pillar-icon"><i class="ti ti-database"></i></div>
-            <div><div class="pillar-name">Statistics</div><div class="pillar-desc">Player and team data</div></div>
-          </li>
-        </ul>
-      </div>
-
-      <div class="sidebar-block">
-        <div class="sidebar-title">School Rankings · U18</div>
-        <div class="school-row">
-          <div class="school-rank">1</div>
-          <div><div class="school-name">Millfield</div><div class="school-region">South West</div></div>
-          <div class="school-form"><div class="form-dot w"></div><div class="form-dot w"></div><div class="form-dot w"></div><div class="form-dot w"></div><div class="form-dot l"></div></div>
-        </div>
-        <div class="school-row">
-          <div class="school-rank">2</div>
-          <div><div class="school-name">Wellington College</div><div class="school-region">South East</div></div>
-          <div class="school-form"><div class="form-dot w"></div><div class="form-dot w"></div><div class="form-dot l"></div><div class="form-dot w"></div><div class="form-dot w"></div></div>
-        </div>
-        <div class="school-row">
-          <div class="school-rank">3</div>
-          <div><div class="school-name">Sedbergh</div><div class="school-region">North</div></div>
-          <div class="school-form"><div class="form-dot w"></div><div class="form-dot l"></div><div class="form-dot w"></div><div class="form-dot w"></div><div class="form-dot w"></div></div>
-        </div>
-        <div class="school-row">
-          <div class="school-rank">4</div>
-          <div><div class="school-name">Hartpury College</div><div class="school-region">South West</div></div>
-          <div class="school-form"><div class="form-dot w"></div><div class="form-dot w"></div><div class="form-dot w"></div><div class="form-dot l"></div><div class="form-dot w"></div></div>
-        </div>
-        <div class="school-row">
-          <div class="school-rank">5</div>
-          <div><div class="school-name">Clifton College</div><div class="school-region">South West</div></div>
-          <div class="school-form"><div class="form-dot w"></div><div class="form-dot w"></div><div class="form-dot d"></div><div class="form-dot w"></div><div class="form-dot l"></div></div>
-        </div>
-        <div style="margin-top:0.75rem"><a href="#" class="section-link" onclick="showPage('schoolboy',null)">Full rankings →</a></div>
-      </div>
-
-      <div class="subscribe-block">
-        <div class="sidebar-title">Join Jacklers</div>
-        <div class="subscribe-desc">Free weekly analysis. Premium subscribers get betting intelligence, recruitment intel, fantasy picks and full schoolboy coverage.</div>
-        <input type="email" class="subscribe-input" placeholder="Your email address">
-        <button class="subscribe-btn">Subscribe free</button>
-        <div class="free-note">No card required · Cancel anytime</div>
-      </div>
-
-    </div>
-  </div>
-
-
-
+<a class="skip-link" href="#main">Skip to content</a>
+<template id="tpl-empty-icon"><svg class="empty__icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14 6v20M34 6v20M14 26h20M24 26v16M17 42h14"/></svg></template>
+<header class="site-header on-dark">
+<div class="wrap header-row">
+<a class="brand" href="/">Jacklers</a>
+<nav class="nav" id="site-nav" aria-label="Primary"><ul><li><a href="/" aria-current="page">Home</a></li><li><a href="/analysis/">Analysis</a></li><li><a href="/recruitment/">Recruitment</a></li><li><a href="/schoolboy/">Schoolboy</a></li><li><a href="/statistics/">Statistics</a></li><li><a href="/players/">Players</a></li><li><a href="/teams/">Teams</a></li><li><a href="/fixtures/">Fixtures &amp; Results</a></li><li><a href="/community/">Community</a></li><li class="nav__cta"><a href="/newsletter/">Newsletter</a></li></ul></nav>
+<div class="header-tools">
+<a class="icon-btn" href="/search/" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></a>
+<button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
 </div>
-
-<!-- ANALYSIS PAGE -->
-<div class="page-section" id="page-analysis">
-  <div class="section-header" style="margin-top:1rem">
-    <div class="section-title">Analysis</div>
-  </div>
-  <p style="color:var(--text-secondary);font-size:15px;margin-bottom:2rem">Tactical breakdowns, match reviews and data-driven analysis across the Premiership, Championship and international rugby.</p>
-  <div class="article-grid" style="background:var(--border)">
-    <div class="article-card">
-      <div class="article-tag">International</div>
-      <div class="article-headline">Why England's defensive structure is the most significant tactical shift of the Eddie Jones era</div>
-      <div class="article-meta">12 min read · Today</div>
-    </div>
-    <div class="article-card">
-      <div class="article-tag">Premiership</div>
-      <div class="article-headline">Bath's lineout has become the most clinical in the Premiership. Here's how they built it.</div>
-      <div class="article-meta">8 min read · Yesterday</div>
-    </div>
-    <div class="article-card">
-      <div class="article-tag">Championship</div>
-      <div class="article-headline">Why the Championship is producing better back rows than the Premiership right now</div>
-      <div class="article-meta">7 min read · 3 days ago</div>
-    </div>
-    <div class="article-card">
-      <div class="article-tag">International <span class="premium-badge">PREMIUM</span></div>
-      <div class="article-headline">Scotland's attacking kicking game — the most underrated tactical weapon in the Six Nations</div>
-      <div class="article-meta">9 min read · 4 days ago</div>
-    </div>
-  </div>
 </div>
-
-<!-- FANTASY PAGE -->
-<div class="page-section" id="page-fantasy">
-  <div class="section-header" style="margin-top:1rem">
-    <div class="section-title">Fantasy Rugby</div>
-  </div>
-  <p style="color:var(--text-secondary);font-size:15px;margin-bottom:2rem">Weekly picks, differential alerts and player ratings for Premiership Rugby Fantasy.</p>
-  <div style="background:var(--white);padding:2rem;border-top:3px solid var(--navy)">
-    <div style="font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem">Gameweek 18 — Premium content</div>
-    <p style="color:var(--text-secondary);font-size:15px;line-height:1.7">Full fantasy picks, captain recommendations and differential alerts are available to premium subscribers. Subscribe for £8/month to access this week's picks.</p>
-    <button class="btn-primary" style="margin-top:1.5rem">Subscribe for £8/month</button>
-  </div>
+</header>
+<main id="main">
+<section class="hero on-dark">
+<svg class="hero__pitch" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+<path pathLength="1" d="M60 70H1140V570H60Z"/>
+<path pathLength="1" d="M170 70V570M1030 70V570"/>
+<path pathLength="1" d="M380 70V570M820 70V570"/>
+<path pathLength="1" d="M150 250V320M190 250V320M150 320H190M170 320V370"/>
+<path pathLength="1" d="M1010 250V320M1050 250V320M1010 320H1050M1030 320V370"/>
+<path pathLength="1" d="M60 320H170M1030 320H1140"/>
+<path pathLength="1" class="is-halfway" d="M600 70V570"/>
+</svg>
+<div class="wrap hero__inner">
+<h1><span class="hero__name">Jacklers</span><span class="hero__line">The rugby publication serious fans have been waiting for.</span></h1>
+<p class="hero__support">Independent rugby journalism, analysis, data and talent intelligence.</p>
+<a class="btn" href="/newsletter/">Subscribe to the Newsletter</a>
 </div>
-
-<!-- RECRUITMENT PAGE -->
-<div class="page-section" id="page-recruitment">
-  <div class="section-header" style="margin-top:1rem">
-    <div class="section-title">Recruitment & Transfers</div>
-  </div>
-  <p style="color:var(--text-secondary);font-size:15px;margin-bottom:2rem">Transfer intelligence, contract analysis and players to watch across English rugby.</p>
-  <div class="article-grid" style="background:var(--border)">
-    <div class="article-card">
-      <div class="article-tag">Premiership <span class="premium-badge">PREMIUM</span></div>
-      <div class="article-headline">The Championship loosehead nobody is talking about — and why two Premiership clubs are watching</div>
-      <div class="article-meta">6 min read · 2 days ago</div>
-    </div>
-    <div class="article-card">
-      <div class="article-tag">Premiership <span class="premium-badge">PREMIUM</span></div>
-      <div class="article-headline">Sale Sharks are quietly building something — and the transfer window tells the story</div>
-      <div class="article-meta">5 min read · Today</div>
-    </div>
-  </div>
+</section>
+<section class="block "><div class="wrap"><div class="block__head"><div><h2>Latest</h2></div></div><div data-render="articles" data-limit="6" data-lead><div class="empty empty--wide"><svg class="empty__icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14 6v20M34 6v20M14 26h20M24 26v16M17 42h14"/></svg><div><p class="empty__title">No stories published yet.</p><p class="empty__text">Jacklers is preparing its first stories.</p></div></div></div></div></section>
+<section class="block "><div class="wrap"><div class="pair"><div><div class="block__head"><div><h2>Analysis</h2></div><a href="/analysis/">Go to Analysis</a></div><div data-render="articles" data-section="analysis" data-limit="3"><div class="empty"><svg class="empty__icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14 6v20M34 6v20M14 26h20M24 26v16M17 42h14"/></svg><div><p class="empty__title">Analysis coming soon.</p></div></div></div></div><div><div class="block__head"><div><h2>Recruitment</h2></div><a href="/recruitment/">Go to Recruitment</a></div><div data-render="articles" data-section="recruitment" data-limit="3"><div class="empty"><svg class="empty__icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14 6v20M34 6v20M14 26h20M24 26v16M17 42h14"/></svg><div><p class="empty__title">Recruitment intelligence coming soon.</p></div></div></div></div></div></div></section>
+<section class="block "><div class="wrap"><div class="pair"><div><div class="block__head"><div><h2>Schoolboy</h2></div><a href="/schoolboy/">Go to Schoolboy</a></div><div data-render="articles" data-section="schoolboy" data-limit="3"><div class="empty"><svg class="empty__icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14 6v20M34 6v20M14 26h20M24 26v16M17 42h14"/></svg><div><p class="empty__title">Schoolboy coverage coming soon.</p></div></div></div></div><div><div class="block__head"><div><h2>Statistics</h2></div><a href="/statistics/">Go to Statistics</a></div><div class="empty"><svg class="empty__icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14 6v20M34 6v20M14 26h20M24 26v16M17 42h14"/></svg><div><p class="empty__title">Jacklers statistics are coming soon.</p></div></div></div></div></div></section>
+<section class="newsletter on-dark" aria-labelledby="nl-title-nl-main">
+<div class="wrap">
+<div><h2 id="nl-title-nl-main">The Jacklers Brief</h2>
+<p>Sharp rugby analysis, emerging talent and the stories behind the numbers.</p></div>
+<form class="signup" data-newsletter novalidate>
+<label class="visually-hidden" for="nl-main">Email address</label>
+<input id="nl-main" type="email" name="email" placeholder="Email address" autocomplete="email" required>
+<button class="btn" type="submit">Subscribe</button>
+<p class="signup__msg" role="status"></p>
+</form>
 </div>
-
-<!-- SCHOOLBOY PAGE -->
-<div class="page-section" id="page-schoolboy">
-  <div class="section-header" style="margin-top:1rem">
-    <div class="section-title">Schoolboy Rugby</div>
-  </div>
-  <p style="color:var(--text-secondary);font-size:15px;margin-bottom:2rem">The only comprehensive national tracker of school rugby — rankings, talent spotting and pathway intelligence.</p>
-  <div class="article-grid" style="background:var(--border);margin-bottom:2rem">
-    <div class="article-card">
-      <div class="article-tag">Talent Watch</div>
-      <div class="article-headline">The Millfield fly half drawing comparisons to a current England international</div>
-      <div class="article-meta">4 min read · Yesterday</div>
-    </div>
-    <div class="article-card">
-      <div class="article-tag">Rankings</div>
-      <div class="article-headline">U18 National Rankings — Week 18: Sedbergh close the gap on Wellington after dominant win</div>
-      <div class="article-meta">3 min read · Today</div>
-    </div>
-  </div>
+</section>
+</main>
+<footer class="site-footer on-dark">
+<div class="wrap footer-grid">
+<div><p class="footer-brand">Jacklers</p><p>The rugby publication serious fans have been waiting for.</p></div>
+<div><h2>Explore</h2><ul><li><a href="/">Home</a></li><li><a href="/analysis/">Analysis</a></li><li><a href="/recruitment/">Recruitment</a></li><li><a href="/schoolboy/">Schoolboy</a></li><li><a href="/statistics/">Statistics</a></li><li><a href="/players/">Players</a></li><li><a href="/teams/">Teams</a></li><li><a href="/fixtures/">Fixtures &amp; Results</a></li><li><a href="/community/">Community</a></li></ul></div>
+<div><h2>Information</h2><ul><li><a href="/about/">About</a></li><li><a href="/contact/">Contact</a></li><li><a href="/privacy/">Privacy</a></li><li><a href="/terms/">Terms</a></li><li><a href="/community-guidelines/">Community Guidelines</a></li></ul></div>
+<div><h2>Newsletter</h2><p>The Jacklers Brief</p><form class="signup" data-newsletter novalidate>
+<label class="visually-hidden" for="nl-footer">Email address</label>
+<input id="nl-footer" type="email" name="email" placeholder="Email address" autocomplete="email" required>
+<button class="btn" type="submit">Subscribe</button>
+<p class="signup__msg" role="status"></p>
+</form></div>
 </div>
-
-<!-- BETTING PAGE -->
-<div class="page-section" id="page-betting">
-  <div class="section-header" style="margin-top:1rem">
-    <div class="section-title">Betting Intelligence</div>
-  </div>
-  <p style="color:var(--text-secondary);font-size:15px;margin-bottom:2rem">Data-driven value betting analysis for Premiership and international rugby. Premium subscribers only.</p>
-  <div style="background:var(--white);padding:2rem;border-top:3px solid var(--navy)">
-    <div style="font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem">This weekend's value picks — Premium</div>
-    <p style="color:var(--text-secondary);font-size:15px;line-height:1.7">Our model analyses odds across all Premiership fixtures every week to find genuine value. This week's analysis and recommended bets are available to premium subscribers.</p>
-    <button class="btn-primary" style="margin-top:1.5rem">Subscribe for £8/month</button>
-  </div>
-</div>
-
-<!-- STATS PAGE -->
-<div class="page-section" id="page-stats">
-  <div class="section-header" style="margin-top:1rem">
-    <div class="section-title">Statistics</div>
-  </div>
-  <p style="color:var(--text-secondary);font-size:15px;margin-bottom:2rem">Player and team data across the Premiership and Championship. Coming soon.</p>
-  <div style="background:var(--white);padding:2rem;border-top:3px solid var(--navy)">
-    <p style="color:var(--text-secondary);font-size:15px;line-height:1.7">Our statistics database is currently being built. It will include player ratings, team performance metrics, and historical data going back five seasons. Subscribe to be notified when it launches.</p>
-    <button class="btn-primary" style="margin-top:1.5rem">Notify me</button>
-  </div>
-</div>
-
-<footer>
-  <div class="footer-inner">
-    <div class="footer-logo">JACKLERS<span>.</span></div>
-    <div class="footer-text">Independent English rugby intelligence · jacklers.co.uk</div>
-  </div>
+<div class="wrap footer-base">&copy; <span data-year>2026</span> Jacklers. Independent rugby publication in development.</div>
 </footer>
-
-<script>
-function showPage(page, linkEl) {
-  document.querySelector('.homepage').classList.add('hidden');
-  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-  if(page === 'home') {
-    document.querySelector('.homepage').classList.remove('hidden');
-  } else {
-    const section = document.getElementById('page-' + page);
-    if(section) section.classList.add('active');
-  }
-  if(linkEl) linkEl.classList.add('active');
-  window.scrollTo(0,0);
-}
-</script>
-
+<script src="/assets/js/site.js" defer></script>
 </body>
 </html>
