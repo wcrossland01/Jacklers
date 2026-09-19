@@ -1,7 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /article/
-Disallow: /players/profile/
-Disallow: /teams/profile/
 
 Sitemap: https://jacklers.co.uk/sitemap.xml

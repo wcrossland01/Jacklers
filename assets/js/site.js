@@ -141,7 +141,7 @@
     var featuredBox = document.querySelector('[data-featured]');
     var state = { page: 1, tag: '', sort: 'newest' };
     J.load('articles').then(function (all) {
-      var items = all.filter(function (a) { return a.section === section; });
+      var items = all.filter(function (a) { return !section || a.section === section; });
       if (!items.length) { return; }
       var featured = items.filter(function (a) { return a.featured; }).sort(byDateDesc)[0];
       if (featured && featuredBox) { featuredBox.replaceChildren(storyCard(featured, true)); }
@@ -236,100 +236,20 @@
     });
   }
 
-  /* ---------- players and teams ---------- */
-  function renderCards(box, list, kind) {
-    var cards = list.map(function (p) {
-      var href = '/' + kind + '/profile/?id=' + encodeURIComponent(p.id || '');
-      var line = kind === 'players' ? [p.position, p.team].filter(Boolean).join(', ') : [p.competition, p.location].filter(Boolean).join(', ');
-      return el('div', { class: 'card' }, [el('h3', {}, [el('a', { href: href, text: p.name || 'Unnamed' })]), line ? el('p', { text: line }) : null]);
-    });
-    box.replaceChildren(el('div', { class: 'cards' }, cards));
-  }
-  var listBox = document.querySelector('[data-render="players"], [data-render="teams"]');
-  if (listBox) {
-    var kind = listBox.getAttribute('data-render');
-    var search = document.getElementById('list-search');
-    J.load(kind).then(function (all) {
-      if (!all.length) { return; }
-      if (search) { search.disabled = false; }
-      var draw = function () {
-        var q = search ? search.value.trim().toLowerCase() : '';
-        var list = all.filter(function (x) { return !q || (x.name || '').toLowerCase().indexOf(q) > -1; });
-        if (list.length) { renderCards(listBox, list, kind); }
-        else { listBox.replaceChildren(emptyState('No matches.', 'Try a different name.')); }
-      };
-      if (search) { search.addEventListener('input', draw); }
-      draw();
-    });
-  }
-  var profileRoot = document.getElementById('profile-root');
-  if (profileRoot) {
-    var pkind = profileRoot.getAttribute('data-kind');
-    var pid = new URLSearchParams(location.search).get('id');
-    J.load(pkind).then(function (all) {
-      var p = all.filter(function (x) { return x.id === pid; })[0];
-      if (!p) { return; }
-      document.title = p.name + ' | Jacklers';
-      var facts = pkind === 'players'
-        ? [['Position', p.position], ['Team', p.team], ['Date of birth', p.dateOfBirth ? fmtDate(p.dateOfBirth) : ''], ['Nationality', p.nationality]]
-        : [['Competition', p.competition], ['Location', p.location]];
-      var dl = el('dl', { class: 'article__stats' }, facts.filter(function (f) { return f[1]; }).map(function (f) {
-        return el('div', {}, [el('dt', { text: f[0] }), el('dd', { text: String(f[1]) })]);
-      }));
-      var img = safeUrl(p.profileImage || p.logo);
-      profileRoot.replaceChildren(el('div', {}, [
-        el('h1', { text: p.name }),
-        img ? el('img', { src: img, alt: '', style: 'max-width:16rem;margin:1.5rem 0' }) : null,
-        dl
-      ]));
-    });
-  }
-
-  /* ---------- fixtures and results ---------- */
-  var fixBox = document.querySelector('[data-render="matches"]');
-  if (fixBox) {
-    var comp = document.getElementById('filter-competition');
-    var seas = document.getElementById('filter-season');
-    J.load('matches').then(function (all) {
-      if (!all.length) { return; }
-      var uniq = function (key) { var o = {}; all.forEach(function (m) { if (m[key]) { o[m[key]] = true; } }); return Object.keys(o).sort(); };
-      uniq('competition').forEach(function (v) { comp.appendChild(el('option', { value: v, text: v })); });
-      uniq('season').forEach(function (v) { seas.appendChild(el('option', { value: v, text: v })); });
-      comp.disabled = seas.disabled = false;
-      var draw = function () {
-        var list = all.filter(function (m) { return (!comp.value || m.competition === comp.value) && (!seas.value || m.season === seas.value); }).sort(byDateDesc);
-        if (!list.length) { fixBox.replaceChildren(emptyState('No matches for this selection.', '')); return; }
-        fixBox.replaceChildren(el('div', { class: 'rows' }, list.map(function (m) {
-          var score = m.status === 'scheduled' || m.homeScore === undefined ? 'v' : m.homeScore + ' to ' + m.awayScore;
-          return el('div', { class: 'row' }, [
-            el('span', { class: 'row__meta', text: fmtDate(m.date) }),
-            el('span', { text: (m.homeTeam || '') + ' ' + score + ' ' + (m.awayTeam || '') }),
-            el('span', { class: 'row__meta', text: [m.competition, m.venue].filter(Boolean).join(', ') })
-          ]);
-        })));
-      };
-      comp.addEventListener('change', draw); seas.addEventListener('change', draw); draw();
-    });
-  }
-
-  /* ---------- global search ---------- */
+  /* ---------- global search (articles) ---------- */
   var searchForm = document.getElementById('search-form');
   if (searchForm) {
     var out = document.getElementById('search-results');
     var qInput = document.getElementById('q');
     var run = function (q) {
-      Promise.all([J.load('articles'), J.load('players'), J.load('teams'), J.load('schools')]).then(function (sets) {
-        var total = sets.reduce(function (n, s) { return n + s.length; }, 0);
-        if (!total) { out.replaceChildren(emptyState('Nothing to search yet.', 'Jacklers has not published any content.')); return; }
+      J.load('articles').then(function (all) {
+        if (!all.length) { out.replaceChildren(emptyState('Nothing to search yet.', 'Jacklers has not published any articles.')); return; }
         if (!q) { out.replaceChildren(); return; }
         var needle = q.toLowerCase();
-        var hit = function (x) { return [x.title, x.name, x.standfirst, (x.tags || []).join(' ')].join(' ').toLowerCase().indexOf(needle) > -1; };
-        var rows = [];
-        sets[0].filter(hit).forEach(function (a) { rows.push(el('div', { class: 'card' }, [el('h3', {}, [el('a', { href: '/article/?slug=' + encodeURIComponent(a.slug), text: a.title })]), el('p', { text: 'Article' })])); });
-        sets[1].filter(hit).forEach(function (p) { rows.push(el('div', { class: 'card' }, [el('h3', {}, [el('a', { href: '/players/profile/?id=' + encodeURIComponent(p.id), text: p.name })]), el('p', { text: 'Player' })])); });
-        sets[2].filter(hit).forEach(function (t) { rows.push(el('div', { class: 'card' }, [el('h3', {}, [el('a', { href: '/teams/profile/?id=' + encodeURIComponent(t.id), text: t.name })]), el('p', { text: 'Team' })])); });
-        sets[3].filter(hit).forEach(function (s) { rows.push(el('div', { class: 'card' }, [el('h3', { text: s.name }), el('p', { text: 'School' })])); });
-        if (rows.length) { out.replaceChildren(el('div', { class: 'cards' }, rows)); }
+        var hits = all.filter(function (x) {
+          return [x.title, x.standfirst, (x.tags || []).join(' ')].join(' ').toLowerCase().indexOf(needle) > -1;
+        });
+        if (hits.length) { renderStories(out, hits.sort(byDateDesc)); }
         else { out.replaceChildren(emptyState('No results for "' + q + '".', 'Check the spelling or try a broader term.')); }
       });
     };
