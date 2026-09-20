@@ -1,0 +1,87 @@
+{
+  "framework": null,
+  "buildCommand": "node build.js",
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/analysis",
+      "destination": "/articles/",
+      "permanent": false
+    },
+    {
+      "source": "/analysis/:path*",
+      "destination": "/articles/",
+      "permanent": false
+    },
+    {
+      "source": "/recruitment",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/recruitment/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/schoolboy",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/schoolboy/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/statistics",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/statistics/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/players",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/players/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/teams",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/teams/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/fixtures",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/fixtures/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/article",
+      "destination": "/articles/",
+      "permanent": false
+    },
+    {
+      "source": "/article/:path*",
+      "destination": "/articles/",
+      "permanent": false
+    }
+  ]
+}
