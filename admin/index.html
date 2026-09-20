@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Editor | Jacklers</title>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
+<link rel="stylesheet" href="/assets/css/site.css">
+<style>
+  .ed { padding-top: 2rem; padding-bottom: 5rem; }
+  .ed h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+  .ed .lede { color: var(--ink-soft); max-width: 60ch; }
+  .ed fieldset { border: 0; padding: 0; margin: 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; }
+  @media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+  .ed .field { min-width: 0; margin-bottom: 1.1rem; }
+  .ed .field input[type="text"], .ed .field input[type="password"], .ed .field input[type="date"], .ed .field textarea { width: 100%; min-height: 2.9rem; padding: 0.55rem 0.75rem; background: #fff; border: 1px solid var(--rule); border-radius: 2px; font: inherit; }
+  .ed textarea#f-body { min-height: 26rem; font-family: var(--serif); font-size: 1.15rem; line-height: 1.6; }
+  .hint { font-size: 0.875rem; color: var(--ink-soft); margin: 0.3rem 0 0; }
+  .bar { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.25rem 0; align-items: center; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+  .toolbar button { min-height: 2.5rem; padding: 0 0.85rem; background: #fff; border: 1px solid var(--rule); border-radius: 2px; cursor: pointer; font-weight: 600; }
+  .status { padding: 0.8rem 1rem; border-radius: 2px; margin: 1rem 0; background: var(--paper-deep); }
+  .status--ok { border-left: 4px solid #2a7a3b; }
+  .status--err { border-left: 4px solid var(--red); }
+  .list { border-top: 2px solid var(--ink); margin-top: 1.25rem; }
+  .list__row { display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: center; padding: 0.9rem 0; border-bottom: 1px solid var(--rule); }
+  .list__row strong { font-family: var(--serif); font-size: 1.2rem; font-weight: 500; }
+  .pill { font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.6rem; border: 1px solid var(--ink-soft); border-radius: 999px; }
+  .pill--live { background: #e3f1e6; border-color: #2a7a3b; color: #1c5a2a; }
+  .preview { background: var(--paper); border: 1px dashed var(--ink-soft); padding: 1.5rem; margin-top: 1rem; }
+  .preview .article { padding: 0; margin: 0; }
+  .hero-prev { max-width: 22rem; margin-top: 0.6rem; }
+  #signout { display: inline-flex; align-items: center; }
+  .steps { padding-left: 1.2rem; display: grid; gap: 0.5rem; max-width: 62ch; }
+</style>
+</head>
+<body>
+<header class="site-header on-dark">
+  <div class="wrap header-row">
+    <span class="brand">Jacklers</span>
+    <div class="header-tools"><a style="color:var(--mist);text-decoration:none;margin-right:1rem" href="/" target="_blank" rel="noopener">View site</a>
+      <button class="menu-btn" id="signout" type="button" hidden>Sign out</button></div>
+  </div>
+</header>
+
+<main class="wrap ed" id="main">
+  <div id="msg" role="status" aria-live="polite"></div>
+
+  <!-- 1. Connect -->
+  <section id="view-setup" hidden>
+    <h1>Article editor</h1>
+    <p class="lede">This page is private to you. To publish, it needs permission to save files in your GitHub repository. You do this once per device.</p>
+    <ol class="steps">
+      <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub's token page</a>.</li>
+      <li>Name it <strong>Jacklers editor</strong> and set an expiry (90 days is sensible).</li>
+      <li>Under <strong>Repository access</strong>, choose <strong>Only select repositories</strong> and pick <strong>Jacklers</strong>.</li>
+      <li>Under <strong>Permissions → Repository permissions</strong>, set <strong>Contents</strong> to <strong>Read and write</strong>.</li>
+      <li>Click <strong>Generate token</strong>, copy it, and paste it below.</li>
+    </ol>
+    <div class="grid2" style="margin-top:1.5rem">
+      <div class="field"><label for="s-token">Token</label><input id="s-token" type="password" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="s-repo">Repository</label><input id="s-repo" type="text" value="wcrossland01/Jacklers"></div>
+    </div>
+    <p class="hint">The token is stored only in this browser. Never share it or paste it into a chat. Use a private computer, and press Sign out on shared ones.</p>
+    <div class="bar"><button class="btn" id="s-connect" type="button">Connect</button></div>
+  </section>
+
+  <!-- 2. List -->
+  <section id="view-list" hidden>
+    <h1>Articles</h1>
+    <div class="bar"><button class="btn" id="l-new" type="button">Write a new article</button></div>
+    <div id="l-rows" class="list"></div>
+  </section>
+
+  <!-- 3. Edit -->
+  <section id="view-edit" hidden>
+    <p><a href="#" id="e-back">Back to all articles</a></p>
+    <h1 id="e-heading">New article</h1>
+    <div class="field"><label for="f-title">Headline</label><input id="f-title" type="text" maxlength="140"></div>
+    <div class="field"><label for="f-standfirst">Standfirst (one or two lines under the headline)</label><textarea id="f-standfirst" rows="2" maxlength="300"></textarea></div>
+    <div class="grid2">
+      <div class="field"><label for="f-author">Author</label><input id="f-author" type="text"></div>
+      <div class="field"><label for="f-date">Date</label><input id="f-date" type="date"></div>
+      <div class="field"><label for="f-tags">Topics (separate with commas)</label><input id="f-tags" type="text" placeholder="Premiership, Six Nations"></div>
+      <div class="field"><label for="f-slug">Web address</label><input id="f-slug" type="text"><p class="hint" id="f-slug-hint"></p></div>
+    </div>
+    <div class="field"><label><input id="f-featured" type="checkbox"> Feature this article at the top of the Articles page</label></div>
+
+    <fieldset class="field">
+      <legend style="font-weight:600;margin-bottom:0.4rem">Main photo</legend>
+      <input id="f-hero-file" type="file" accept="image/*">
+      <div class="grid2" style="margin-top:0.6rem">
+        <div class="field"><label for="f-hero-alt">Describe the photo (for screen readers)</label><input id="f-hero-alt" type="text"></div>
+        <div class="field"><label for="f-hero-cap">Caption and credit</label><input id="f-hero-cap" type="text"></div>
+      </div>
+      <img id="f-hero-prev" class="hero-prev" alt="" hidden>
+      <p><button type="button" id="f-hero-remove" class="btn btn--quiet" hidden>Remove photo</button></p>
+    </fieldset>
+
+    <div class="field">
+      <label for="f-body">Article</label>
+      <div class="toolbar" role="toolbar" aria-label="Formatting">
+        <button type="button" data-fmt="h2">Heading</button>
+        <button type="button" data-fmt="bold">Bold</button>
+        <button type="button" data-fmt="italic">Italic</button>
+        <button type="button" data-fmt="link">Link</button>
+        <button type="button" data-fmt="quote">Quote</button>
+        <button type="button" data-fmt="list">List</button>
+        <button type="button" data-fmt="image">Add photo</button>
+        <input id="f-body-file" type="file" accept="image/*" hidden>
+      </div>
+      <textarea id="f-body"></textarea>
+      <p class="hint">Leave a blank line between paragraphs. Use the buttons above for headings, bold, links, quotes and photos.</p>
+    </div>
+
+    <div class="bar">
+      <button class="btn btn--quiet" id="e-preview" type="button">Preview</button>
+      <button class="btn btn--quiet" id="e-draft" type="button">Save draft</button>
+      <button class="btn" id="e-publish" type="button">Publish</button>
+      <button class="btn btn--quiet" id="e-unpublish" type="button" hidden>Unpublish</button>
+      <a id="e-live" href="#" target="_blank" rel="noopener" hidden>View live article</a>
+    </div>
+    <div id="e-preview-box" class="preview" hidden></div>
+  </section>
+</main>
+
+<script src="/assets/js/markdown.js"></script>
+<script>
+(function () {
+  'use strict';
+  var C = window.JacklersContent;
+  var $ = function (id) { return document.getElementById(id); };
+  var BRANCH = 'main';
+  var DIR = 'content/articles';
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  var cfg = { repo: store.get('jk_repo') || 'wcrossland01/Jacklers', token: store.get('jk_token') || '' };
+  var current = null; // { path, sha, isNew, status }
+
+  /* ---------- helpers ---------- */
+  function show(view) {
+    ['setup', 'list', 'edit'].forEach(function (v) { $('view-' + v).hidden = v !== view; });
+    $('signout').hidden = !cfg.token;
+    window.scrollTo(0, 0);
+  }
+  function say(text, kind) {
+    var box = $('msg'); box.replaceChildren();
+    if (!text) { return; }
+    var d = document.createElement('div'); d.className = 'status status--' + (kind || 'ok'); d.textContent = text; box.appendChild(d);
+  }
+  function b64enc(str) {
+    var bytes = new TextEncoder().encode(str), bin = '';
+    for (var i = 0; i < bytes.length; i++) { bin += String.fromCharCode(bytes[i]); }
+    return btoa(bin);
+  }
+  function b64dec(b64) {
+    var bin = atob(b64.replace(/\s/g, '')), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) { bytes[i] = bin.charCodeAt(i); }
+    return new TextDecoder().decode(bytes);
+  }
+  function gh(path, opts) {
+    opts = opts || {};
+    return fetch('https://api.github.com/repos/' + cfg.repo + path, {
+      method: opts.method || 'GET',
+      headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + cfg.token, 'X-GitHub-Api-Version': '2022-11-28' },
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(function (res) {
+      if (res.ok) { return res.status === 204 ? null : res.json(); }
+      return res.json().catch(function () { return {}; }).then(function (j) {
+        var err = new Error(j.message || res.statusText); err.status = res.status; throw err;
+      });
+    });
+  }
+  function friendly(err) {
+    if (err.status === 401) { return 'GitHub did not accept the token. It may have expired. Sign out and connect again with a new one.'; }
+    if (err.status === 403 || err.status === 404) { return 'GitHub says this token cannot use that repository. Check the repository name, and that Contents is set to Read and write.'; }
+    if (err.status === 409 || err.status === 422) { return 'GitHub rejected the save (' + err.message + '). Reload the article and try again.'; }
+    return 'Something went wrong: ' + err.message;
+  }
+  function busy(btn, on) { btn.disabled = on; }
+
+  /* ---------- 1. connect ---------- */
+  $('s-connect').addEventListener('click', function () {
+    var token = $('s-token').value.trim(), repo = $('s-repo').value.trim();
+    if (!token || !repo) { say('Enter the token and the repository.', 'err'); return; }
+    cfg.token = token; cfg.repo = repo;
+    busy($('s-connect'), true);
+    gh('').then(function (r) {
+      if (r.permissions && r.permissions.push === false) { throw Object.assign(new Error('read-only'), { status: 403 }); }
+      store.set('jk_token', token); store.set('jk_repo', repo);
+      say('Connected.', 'ok'); loadList();
+    }).catch(function (e) { cfg.token = ''; say(friendly(e), 'err'); })
+      .then(function () { busy($('s-connect'), false); });
+  });
+  $('signout').addEventListener('click', function () {
+    store.del('jk_token'); cfg.token = ''; $('s-token').value = ''; say('Signed out.', 'ok'); show('setup');
+  });
+
+  /* ---------- 2. list ---------- */
+  function loadList() {
+    show('list'); var rows = $('l-rows'); rows.replaceChildren();
+    var loading = document.createElement('p'); loading.textContent = 'Loading…'; rows.appendChild(loading);
+    gh('/contents/' + DIR + '?ref=' + BRANCH).catch(function (e) { if (e.status === 404) { return []; } throw e; }).then(function (files) {
+      files = files.filter(function (f) { return /\.md$/.test(f.name); });
+      return Promise.all(files.map(function (f) {
+        return gh('/contents/' + f.path + '?ref=' + BRANCH).then(function (file) {
+          var p = C.parse(b64dec(file.content)); return { path: f.path, sha: file.sha, meta: p.meta };
+        });
+      }));
+    }).then(function (items) {
+      rows.replaceChildren();
+      items.sort(function (a, b) { return String(b.meta.date || '').localeCompare(String(a.meta.date || '')); });
+      if (!items.length) {
+        var p = document.createElement('p'); p.style.padding = '1rem 0'; p.textContent = 'No articles yet. Click "Write a new article" to start.'; rows.appendChild(p); return;
+      }
+      items.forEach(function (it) {
+        var row = document.createElement('div'); row.className = 'list__row';
+        var t = document.createElement('div');
+        var s = document.createElement('strong'); s.textContent = it.meta.title || '(no headline)';
+        var d = document.createElement('div'); d.className = 'hint'; d.textContent = it.meta.date || '';
+        t.appendChild(s); t.appendChild(d);
+        var pill = document.createElement('span'); var live = it.meta.status === 'published';
+        pill.className = 'pill' + (live ? ' pill--live' : ''); pill.textContent = live ? 'Published' : 'Draft';
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn--quiet'; b.textContent = 'Edit';
+        b.addEventListener('click', function () { openEditor(it); });
+        row.appendChild(t); row.appendChild(pill); row.appendChild(b); rows.appendChild(row);
+      });
+    }).catch(function (e) { rows.replaceChildren(); say(friendly(e), 'err'); if (e.status === 401) { show('setup'); } });
+  }
+  $('l-new').addEventListener('click', function () { openEditor(null); });
+
+  /* ---------- 3. edit ---------- */
+  var slugTouched = false, heroPath = '';
+  function today() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function setHero(path) {
+    heroPath = path || '';
+    $('f-hero-prev').hidden = !heroPath; $('f-hero-remove').hidden = !heroPath;
+    if (heroPath) { $('f-hero-prev').src = heroPath; }
+  }
+  function openEditor(item) {
+    say(''); $('e-preview-box').hidden = true;
+    if (!item) {
+      current = { path: null, sha: null, isNew: true, status: 'draft' };
+      ['title', 'standfirst', 'author', 'tags', 'slug', 'hero-alt', 'hero-cap', 'body'].forEach(function (k) { $('f-' + k).value = ''; });
+      $('f-date').value = today(); $('f-featured').checked = false; slugTouched = false; setHero('');
+      $('e-heading').textContent = 'New article';
+    } else {
+      current = { path: item.path, sha: item.sha, isNew: false, status: item.meta.status || 'draft' };
+      gh('/contents/' + item.path + '?ref=' + BRANCH).then(function (file) {
+        current.sha = file.sha;
+        var p = C.parse(b64dec(file.content)), m = p.meta;
+        $('f-title').value = m.title || ''; $('f-standfirst').value = m.standfirst || ''; $('f-author').value = m.author || '';
+        $('f-date').value = m.date || today(); $('f-tags').value = (m.tags || []).join(', '); $('f-slug').value = m.slug || '';
+        $('f-featured').checked = m.featured === true; $('f-hero-alt').value = m.heroAlt || ''; $('f-hero-cap').value = m.heroCaption || '';
+        $('f-body').value = p.body; setHero(m.heroImage || ''); slugTouched = true; refreshButtons();
+      }).catch(function (e) { say(friendly(e), 'err'); });
+      $('e-heading').textContent = 'Edit article';
+    }
+    refreshButtons(); show('edit');
+  }
+  function refreshButtons() {
+    var live = current && current.status === 'published';
+    $('e-publish').textContent = live ? 'Update published article' : 'Publish';
+    $('e-unpublish').hidden = !live;
+    $('e-draft').hidden = live;
+    $('f-slug').readOnly = !current.isNew;
+    $('f-slug-hint').textContent = current.isNew ? 'Made from the headline. It cannot be changed after the first save.' : 'This cannot be changed once saved, so links keep working.';
+    var slug = $('f-slug').value;
+    $('e-live').hidden = !(live && slug); if (slug) { $('e-live').href = '/articles/' + slug + '/'; }
+  }
+  $('e-back').addEventListener('click', function (ev) { ev.preventDefault(); say(''); loadList(); });
+  $('f-title').addEventListener('input', function () { if (current && current.isNew && !slugTouched) { $('f-slug').value = C.slugify($('f-title').value); } });
+  $('f-slug').addEventListener('input', function () { slugTouched = true; });
+
+  /* toolbar */
+  function wrap(before, after, placeholder) {
+    var ta = $('f-body'), s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e) || placeholder;
+    ta.value = ta.value.slice(0, s) + before + sel + after + ta.value.slice(e);
+    ta.focus(); ta.selectionStart = s + before.length; ta.selectionEnd = s + before.length + sel.length;
+  }
+  function linePrefix(prefix) {
+    var ta = $('f-body'), s = ta.selectionStart, start = ta.value.lastIndexOf('\n', s - 1) + 1;
+    ta.value = ta.value.slice(0, start) + prefix + ta.value.slice(start); ta.focus();
+  }
+  function insertAtCursor(text) {
+    var ta = $('f-body'), s = ta.selectionStart;
+    ta.value = ta.value.slice(0, s) + text + ta.value.slice(ta.selectionEnd); ta.focus(); ta.selectionStart = ta.selectionEnd = s + text.length;
+  }
+  document.querySelector('.toolbar').addEventListener('click', function (ev) {
+    var f = ev.target && ev.target.getAttribute && ev.target.getAttribute('data-fmt'); if (!f) { return; }
+    if (f === 'bold') { wrap('**', '**', 'bold text'); }
+    else if (f === 'italic') { wrap('*', '*', 'italic text'); }
+    else if (f === 'h2') { linePrefix('## '); }
+    else if (f === 'quote') { linePrefix('> '); }
+    else if (f === 'list') { linePrefix('- '); }
+    else if (f === 'link') { var u = window.prompt('Paste the web address (starting with https://)'); if (u) { wrap('[', '](' + u.trim() + ')', 'link text'); } }
+    else if (f === 'image') {
+      if (!$('f-slug').value) { say('Write the headline first, so the photo can be filed with this article.', 'err'); return; }
+      $('f-body-file').click();
+    }
+  });
+
+  /* photos: resized in the browser, then saved to /images/articles */
+  function shrink(file) {
+    return createImageBitmap(file).then(function (bmp) {
+      var scale = Math.min(1, 1600 / bmp.width), w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+      var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      var cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(bmp, 0, 0, w, h);
+      return new Promise(function (res) { cv.toBlob(res, 'image/jpeg', 0.85); });
+    }).then(function (blob) { return blob.arrayBuffer(); }).then(function (buf) {
+      var bytes = new Uint8Array(buf), bin = '';
+      for (var i = 0; i < bytes.length; i += 8192) { bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)); }
+      return btoa(bin);
+    });
+  }
+  function uploadPhoto(file) {
+    var slug = $('f-slug').value || C.slugify($('f-title').value);
+    if (!slug) { say('Write the headline first, so the photo can be filed with this article.', 'err'); return Promise.reject(new Error('no slug')); }
+    say('Uploading photo…', 'ok');
+    var path = 'images/articles/' + slug + '-' + Date.now() + '.jpg';
+    return shrink(file).then(function (b64) {
+      return gh('/contents/' + path, { method: 'PUT', body: { message: 'Add photo for ' + slug, content: b64, branch: BRANCH } });
+    }).then(function () { say('Photo uploaded.', 'ok'); return '/' + path; });
+  }
+  $('f-hero-file').addEventListener('change', function () {
+    var f = this.files[0]; if (!f) { return; }
+    uploadPhoto(f).then(setHero).catch(function (e) { if (e.message !== 'no slug') { say(friendly(e), 'err'); } });
+    this.value = '';
+  });
+  $('f-body-file').addEventListener('change', function () {
+    var f = this.files[0]; if (!f) { return; }
+    var alt = window.prompt('Describe the photo in a few words (for screen readers)') || '';
+    var cap = window.prompt('Caption and credit (optional)') || '';
+    uploadPhoto(f).then(function (p) {
+      insertAtCursor('\n\n![' + alt.replace(/[\]\n]/g, ' ') + '](' + p + (cap ? ' "' + cap.replace(/"/g, "'").replace(/\n/g, ' ') + '"' : '') + ')\n\n');
+    }).catch(function (e) { if (e.message !== 'no slug') { say(friendly(e), 'err'); } });
+    this.value = '';
+  });
+  $('f-hero-remove').addEventListener('click', function () { setHero(''); });
+
+  /* preview */
+  $('e-preview').addEventListener('click', function () {
+    var box = $('e-preview-box'), e = C.esc;
+    var hero = heroPath ? '<figure class="article__hero"><img src="' + e(heroPath) + '" alt="' + e($('f-hero-alt').value) + '"></figure>' : '';
+    box.innerHTML = '<div class="article"><h1>' + e($('f-title').value || 'Headline') + '</h1>' +
+      ($('f-standfirst').value ? '<p class="article__stand">' + e($('f-standfirst').value) + '</p>' : '') +
+      '<p class="article__meta">' + ($('f-author').value ? 'By ' + e($('f-author').value) + ', ' : '') + e($('f-date').value) + ', ' + C.readingTime($('f-body').value) + ' min read</p>' +
+      hero + '<div class="article__body">' + C.render($('f-body').value) + '</div></div>';
+    box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  /* save */
+  function save(status) {
+    var title = $('f-title').value.trim(), slug = C.slugify($('f-slug').value || title);
+    if (!title) { say('Add a headline first.', 'err'); return; }
+    if (!slug || slug === 'index') { say('That web address cannot be used. Change the headline or the web address.', 'err'); return; }
+    if (status === 'published') {
+      if (!$('f-body').value.trim()) { say('The article is empty. Write something before publishing.', 'err'); return; }
+      if (!$('f-author').value.trim()) { say('Add an author before publishing.', 'err'); return; }
+      if (!$('f-date').value) { say('Choose a date before publishing.', 'err'); return; }
+      if (!window.confirm(current.status === 'published' ? 'Update this article on the live site?' : 'Publish this article on the live site?')) { return; }
+    }
+    var meta = { title: title, slug: slug, status: status, date: $('f-date').value || today(), author: $('f-author').value.trim(),
+      standfirst: $('f-standfirst').value.trim(), tags: $('f-tags').value.split(',').map(function (t) { return t.trim(); }).filter(Boolean),
+      featured: $('f-featured').checked ? true : '', heroImage: heroPath, heroAlt: $('f-hero-alt').value.trim(), heroCaption: $('f-hero-cap').value.trim() };
+    var path = current.path || (DIR + '/' + slug + '.md');
+    var body = { message: (status === 'published' ? 'Publish: ' : 'Save draft: ') + title, content: b64enc(C.serialize(meta, $('f-body').value)), branch: BRANCH };
+    if (current.sha) { body.sha = current.sha; }
+    ['e-draft', 'e-publish', 'e-unpublish'].forEach(function (id) { busy($(id), true); });
+    say('Saving…', 'ok');
+    gh('/contents/' + path, { method: 'PUT', body: body }).then(function (res) {
+      current = { path: path, sha: res.content.sha, isNew: false, status: status };
+      $('f-slug').value = slug; refreshButtons();
+      say(status === 'published' ? 'Published. The live site updates in about a minute.' : 'Draft saved. It is not visible on the site.', 'ok');
+    }).catch(function (e) {
+      say(e.status === 422 && current.isNew ? 'An article with that web address already exists. Change the web address.' : friendly(e), 'err');
+    }).then(function () { ['e-draft', 'e-publish', 'e-unpublish'].forEach(function (id) { busy($(id), false); }); });
+  }
+  $('e-draft').addEventListener('click', function () { save('draft'); });
+  $('e-publish').addEventListener('click', function () { save('published'); });
+  $('e-unpublish').addEventListener('click', function () {
+    if (window.confirm('Take this article off the live site? It will be kept as a draft.')) { save('draft'); }
+  });
+
+  /* start */
+  if (cfg.token) { $('s-repo').value = cfg.repo; loadList(); } else { show('setup'); }
+})();
+</script>
+</body>
+</html>
