@@ -14,7 +14,7 @@
 
   var LEN = 120, WID = 70, MID = 60, TRY0 = 10, TRY1 = 110;
   // Tuning knobs for the match (all probabilities per event)
-  var TUNE = { sway: 0.75, hurry: 1.6, hustle: 1.6, recover: 1.4, recoverFrom: 6, recoverSlope: 0.04, teamRun: 5, teamRunMax: 14, missRedZone: 0.7, lineDepth: 9.5, lineSpeed: 1.6, momentum: 2.6, kickOwn: 0.32, kickOpp: 0.12, pass: 0.74, missTackle: 0.4, knockOn: 0.006, turnover: 0.05, penalty: 0.02, box: 0.16, carrierSpeed: 1.1, breakRun: 1.4 };
+  var TUNE = { sway: 0.75, hurry: 1.6, hustle: 1.6, recover: 1.4, recoverFrom: 6, recoverSlope: 0.04, teamRun: 5, teamRunMax: 14, missRedZone: 0.7, lineDepth: 9.5, lineSpeed: 1.6, momentum: 2.6, kickOwn: 0.32, kickOpp: 0.12, pass: 0.74, missTackle: 0.4, knockOn: 0.006, turnover: 0.05, penalty: 0.02, box: 0.16, carrierSpeed: 1.1, breakRun: 1.4, wideChance: 0.6, pauseDur: 0.55, shapeDrift: 3.6 };
   var COL = { red: '#D0343F', white: '#F6F3EE', ball: '#E8B84A', ref: '#6FD3A2', line: '246,243,238' };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -30,13 +30,13 @@
     var sim = {
       players: [], teams: [[], []], ref: { x: 60, y: 22, vx: 0, vy: 0, tx: 60, ty: 22 },
       ball: { x: 60, y: 35, h: 0, owner: null, fly: null },
-      phase: 'kickoff_setup', pt: 0, poss: 0, score: [0, 0], flip: 1, time: 0, nextHalf: 140,
+      phase: 'kickoff_setup', pt: 0, poss: 0, score: [0, 0], flip: 1, time: 0, nextHalf: 140, seq: 0,
       pulses: [], carrier: null, anchor: { x: 60, y: 35 }, dec: 0, d: {}, changed: false,
       stats: { passes: 0, kicks: 0, chips: 0, tackles: 0, tries: 0, offloads: 0 }
     };
     for (var t = 0; t < 2; t++) {
       for (var r = 0; r < 15; r++) {
-        var p = { w: R(1.5, 2.4), ph: R(0, 6.28), hurry: false, team: t, role: r, x: 60, y: 35, vx: 0, vy: 0, tx: 60, ty: 35, max: (r < 8 ? 5.0 : 6.0) + R(-0.3, 0.4),
+        var p = { w: R(1.5, 2.4), ph: R(0, 6.28), hurry: false, team: t, role: r, x: 60, y: 35, vx: 0, vy: 0, tx: 60, ty: 35, max: (r < 8 ? 4.5 : 5.4) + R(-0.3, 0.4),
                   jx: R(-0.8, 0.8), jy: R(-0.8, 0.8), immune: 0, slow: 0 };
         sim.players.push(p); sim.teams[t].push(p);
       }
@@ -112,16 +112,16 @@
         if (p.role === 9) { go(p, MID - dk * 0.4, WID / 2); return; }
         go(p, MID - dk * (1.2 + (p.role % 3) * 0.8), 5 + (p.role / 14) * 60);
       });
-      var fw = [8, 14, 20, 26, 32, 38, 44, 50, 56];
-      sim.teams[rt].forEach(function (p) {
-        if (p.role < 8) go(p, MID + dk * (11.5 + (p.role % 2) * 1.5), 9 + p.role * 7.5);
-        else { var k = p.role - 8; go(p, MID + dk * (22 + k * 3), [30, 22, 48, 12, 58, 28, 35][k]); }
+      sim.teams[rt].forEach(function (p) {   // nobody starts shallower than the shortest possible kick (24m) - no one is caught offside at the catch
+        if (p.role < 8) go(p, MID + dk * (24 + (p.role % 4) * 2), 9 + p.role * 7.5);
+        else { var k = p.role - 8; go(p, MID + dk * (24 + k * 3), [30, 22, 48, 12, 58, 28, 35][k]); }
       });
       sim.ref.tx = MID - dk * 4; sim.ref.ty = 26;
     }
-    function startOpen(team, carrier, forcePass, noKick) {
+    function startOpen(team, carrier, forcePass, noKick, continuePhase) {
       sim.poss = team; giveBall(carrier);
-      sim.d = { refSide: sim.d.refSide || 1, forcePass: !!forcePass, age: 0, baseX: carrier.x, kickChecked: !!noKick };
+      sim.seq = continuePhase ? (sim.seq || 0) + 1 : 0;   // phases since the last set-piece/turnover: only recycled ruck ball counts
+      sim.d = { refSide: sim.d.refSide || 1, forcePass: !!forcePass, age: 0, baseX: carrier.x, kickChecked: !!noKick, shapeY: carrier.y };
       sim.dec = forcePass ? 0.05 : R(0.3, 0.7);
       setPhase('open');
     }
@@ -135,7 +135,11 @@
       fa.sort(function (p, q) { return hyp(p.x - ax, p.y - ay) - hyp(q.x - ax, q.y - ay); });
       var fd = roleSet(other(a), 0, 7).filter(function (p) { return p !== tackler; });
       fd.sort(function (p, q) { return hyp(p.x - ax, p.y - ay) - hyp(q.x - ax, q.y - ay); });
-      sim.d = { down: sim.d.down, tackler: tackler, ra: fa.slice(0, 3), rd: [tackler].concat(fd.slice(0, 2)),
+      // keep the breakdown itself small - the ball carrier and tackler plus, usually, one or two more:
+      // never more than 4 bodies committed, most often 2 or 3
+      var extraRoll = rand(), extra = extraRoll < 0.3 ? 0 : extraRoll < 0.8 ? 1 : 2, raExtra = 0, rdExtra = 0;
+      for (var e = 0; e < extra; e++) { if (rand() < 0.5) raExtra++; else rdExtra++; }
+      sim.d = { down: sim.d.down, tackler: tackler, ra: fa.slice(0, raExtra), rd: [tackler].concat(fd.slice(0, rdExtra)),
                 dur: R(1.9, 2.8), refSide: sim.d.refSide };
       pulse('tackle', ax, ay); sim.stats.tackles++;
       setPhase('ruck');
@@ -152,7 +156,7 @@
       sim.poss = thrower;
       sim.anchor = { x: clamp(x, 14, 106), y: edge };
       loose(sim.anchor.x, edge); sim.carrier = null;
-      sim.d = { dur: 3.4, thrown: false, refSide: sim.d.refSide };
+      sim.d = { dur: 6, thrown: false, refSide: sim.d.refSide };
       pulse('whistle', sim.ref.x, sim.ref.y);
       setPhase('lineout');
     }
@@ -208,28 +212,54 @@
     }
 
     /* ---------- open play decisions ---------- */
-    function tryPass(c) {
-      var a = c.team, d = dirOf(a), cands = [], wsum = 0;
-      sim.teams[a].forEach(function (r) {
-        if (r === c) return;
+    function findRole(a, role) {
+      for (var i = 0; i < sim.teams[a].length; i++) if (sim.teams[a][i].role === role) return sim.teams[a][i];
+      return null;
+    }
+    function pickForward(a, c) {   // a nearby forward, onside, to carry it into contact
+      var d = dirOf(a), cands = sim.teams[a].filter(function (r) {
+        if (r.role >= 8) return false;
         var back = (c.x - r.x) * d, dist = hyp(r.x - c.x, r.y - c.y);
-        if (back >= -0.4 && dist >= 3.5 && dist <= 19) {
-          var w = r.role >= 9 && r.role <= 12 ? 3 : r.role >= 13 ? 2 : 1; cands.push([r, w]); wsum += w;
-        }
+        return back >= -0.4 && dist >= 2.5 && dist <= 12;
       });
-      if (!cands.length) return false;
-      var pick = rand() * wsum, r = cands[0][0];
-      for (var i = 0; i < cands.length; i++) { pick -= cands[i][1]; if (pick <= 0) { r = cands[i][0]; break; } }
+      return cands.length ? nearest(cands, c.x + d * 3, c.y) : null;
+    }
+    function phaseTarget(c) {   // what the scrum-half does with quick ball off a ruck: mostly feed the forwards, sometimes release the backline
+      if (c.role !== 8) return null;
+      var a = c.team, os = c.y < WID / 2 ? 1 : -1;
+      if (sim.seq >= 3 && rand() < TUNE.wideChance) {
+        sim.seq = 0;   // used our release for this run of phases: back to forwards next time
+        sim.d.chain = [11, 12, os > 0 ? 10 : 13];   // 10 moves it through 12, 13, then out to the wing
+        return findRole(a, 9);
+      }
+      sim.d.chain = null;
+      return pickForward(a, c);
+    }
+    function tryPass(c, forced) {
+      var a = c.team, d = dirOf(a), r = (forced && forced.team === a && forced !== c) ? forced : null;
+      if (!r) {
+        var cands = [], wsum = 0;
+        sim.teams[a].forEach(function (rr) {
+          if (rr === c) return;
+          var back = (c.x - rr.x) * d, dist = hyp(rr.x - c.x, rr.y - c.y);
+          if (back >= -0.4 && dist >= 3.5 && dist <= 19) {
+            var w = rr.role >= 9 && rr.role <= 12 ? 3 : rr.role >= 13 ? 2 : 1; cands.push([rr, w]); wsum += w;
+          }
+        });
+        if (!cands.length) return false;
+        var pick = rand() * wsum; r = cands[0][0];
+        for (var i = 0; i < cands.length; i++) { pick -= cands[i][1]; if (pick <= 0) { r = cands[i][0]; break; } }
+      }
       var dist = hyp(r.x - c.x, r.y - c.y), dur = Math.max(0.28, dist / 15.5);
       var lx = r.x + r.vx * dur * 0.8, ly = r.y + r.vy * dur * 0.8;
       sim.ball.x = c.x; sim.ball.y = c.y; sim.carrier = null;
-      sim.d.receiver = r; sim.stats.passes++;
+      sim.d.receiver = r; sim.d.passerX = c.x; sim.stats.passes++;   // the offside line while it's in the air: where it was thrown from
       fly(lx, ly, dur, 1.6, function () {
         sim.d.forcePass = false;
         if (rand() < TUNE.knockOn) { // knock-on: scrum to the other side
           startScrum(other(a), r.x, r.y); return;
         }
-        giveBall(r); sim.dec = R(0.3, 0.75);
+        giveBall(r); sim.dec = (sim.d.chain && sim.d.chain.length) ? R(0.55, 0.95) : R(0.3, 0.75);   // mid-move: run at your man before you release it
       });
       return true;
     }
@@ -276,12 +306,16 @@
 
       if (ph === 'open') {
         var c = sim.carrier;
-        if (!c) { // a pass is in the air: keep shape around the ball and let the receiver run on to it
+        if (!c) { // a pass is in the air: keep shape around the ball, but nobody may stand ahead of where it was thrown from
           var pa0 = sim.poss, d0 = dirOf(pa0), rc = sim.d.receiver;
           sim.d.age = (sim.d.age || 0) + dt;
-          attackShape(pa0, sim.d.baseX + d0 * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax), b.y, rc ? [rc] : null);
-          defenceShape(other(pa0), sim.d.baseX, b.y, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
-          if (rc) go(rc, b.x + d0 * 4, b.y);
+          sim.d.shapeY += clamp(b.y - sim.d.shapeY, -TUNE.shapeDrift * dt, TUNE.shapeDrift * dt);   // the shape drifts across, it doesn't snap to the ball
+          var wantAx0 = sim.d.baseX + d0 * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax);
+          var ax0 = d0 > 0 ? Math.min(wantAx0, sim.d.passerX) : Math.max(wantAx0, sim.d.passerX);
+          attackShape(pa0, ax0, sim.d.shapeY, rc ? [rc] : null);
+          defenceShape(other(pa0), sim.d.baseX, sim.d.shapeY, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
+          sim.teams[pa0].forEach(function (p) { if ((p.x - sim.d.passerX) * d0 > 0.3) p.hurry = true; });   // caught offside: sprint back now
+          if (rc) { var rcx = d0 > 0 ? Math.min(b.x + d0 * 4, sim.d.passerX) : Math.max(b.x + d0 * 4, sim.d.passerX); go(rc, rcx, b.y); }
           go(nearest(sim.teams[other(pa0)], b.x, b.y), b.x + d0 * 2, b.y);
           refFollow(b.x, b.y, d0);
           return;
@@ -292,8 +326,21 @@
         // carrier runs at the line, drifting to space
         var open = c.y < WID / 2 ? 1 : -1;
         if (c.immune > 0) go(c, c.x + d * 24, c.y + (c.y < WID / 2 ? 1 : -1) * 3); else go(c, c.x + d * 9, c.y + open * 2.2);
-        attackShape(a, sim.d.baseX + d * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax), c.y, [c]);
-        defenceShape(def, sim.d.baseX, c.y, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
+        sim.d.shapeY += clamp(c.y - sim.d.shapeY, -TUNE.shapeDrift * dt, TUNE.shapeDrift * dt);   // the shape drifts across, it doesn't snap to the carrier
+        // support may never be shown ahead of the ball carrier - that's offside in open play, no exceptions
+        var wantAx = sim.d.baseX + d * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax);
+        var ax = d > 0 ? Math.min(wantAx, c.x) : Math.max(wantAx, c.x);
+        attackShape(a, ax, sim.d.shapeY, [c]);
+        defenceShape(def, sim.d.baseX, sim.d.shapeY, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
+        sim.teams[a].forEach(function (p) { if (p !== c && (p.x - c.x) * d > 0.3) p.hurry = true; });   // caught offside: sprint back now
+        if (c.immune > 0) {   // a clean break: the nearest couple of team-mates shadow the ball rather than holding the wider shape
+          var mates = sim.teams[a].filter(function (p) { return p !== c; })
+            .sort(function (p, q) { return hyp(p.x - c.x, p.y - c.y) - hyp(q.x - c.x, q.y - c.y); });
+          for (var s = 0; s < Math.min(2, mates.length); s++) {
+            var m = mates[s], side = m.y < c.y ? -1 : 1;
+            go(m, c.x - d * (3 + s * 2.5), c.y + side * (3.5 + s * 1.5));
+          }
+        }
         sim.teams[def].forEach(function (q) {
           q.hurry = (q.x - c.x) * d < 0.5;
           if (q.hurry) {                                            // beaten: turn and cut the runner off
@@ -303,22 +350,31 @@
         });
         var chaser = nearest(sim.teams[def], c.x, c.y);
         if (hyp(chaser.x - c.x, chaser.y - c.y) < 5) go(chaser, c.x + d * 0.6, c.y);
+        // mid backline move: run straight at the defender to draw him rather than passing on a clock
+        if (c.immune <= 0 && sim.d.chain && sim.d.chain.length && hyp(chaser.x - c.x, chaser.y - c.y) < 3.2) {
+          sim.dec = Math.min(sim.dec, 0.05);
+        }
         refFollow(c.x, c.y, d);
         // try
         if ((d > 0 && c.x >= TRY1) || (d < 0 && c.x <= TRY0)) { startTry(c); return; }
         // out of play
         if (c.y <= 0.7 || c.y >= WID - 0.7) { startLineout(def, c.x, c.y < WID / 2 ? 0 : WID); return; }
-        // decisions
-        sim.dec -= dt;
-        if (sim.dec <= 0) {
-          var zone = (c.x - MID) * d, toGo = d > 0 ? TRY1 - c.x : c.x - TRY0;
-          if (!sim.d.forcePass && !sim.d.kickChecked) {   // one chance per possession to put boot to ball
-            sim.d.kickChecked = true;
-            var kp = toGo > 18 ? (zone < 8 ? TUNE.kickOwn : TUNE.kickOpp) : 0;
-            if (rand() < kp) { startKick(c, false, toGo < 38 ? 'chip' : zone < 6 ? (rand() < 0.75 ? 'long' : 'chip') : (rand() < 0.6 ? 'chip' : 'long')); return; }
+        // decisions: a clean break just runs - no pass, no kick, no getting hauled into a ruck by the clock
+        if (c.immune <= 0) {
+          sim.dec -= dt;
+          if (sim.dec <= 0) {
+            var zone = (c.x - MID) * d, toGo = d > 0 ? TRY1 - c.x : c.x - TRY0;
+            if (!sim.d.forcePass && !sim.d.kickChecked && (c.role === 8 || c.role === 9)) {   // only 9 or 10 put boot to ball, one chance per possession
+              sim.d.kickChecked = true;
+              var kp = toGo > 18 ? (zone < 8 ? TUNE.kickOwn : TUNE.kickOpp) : 0;
+              if (rand() < kp) { startKick(c, false, toGo < 38 ? 'chip' : zone < 6 ? (rand() < 0.75 ? 'long' : 'chip') : (rand() < 0.6 ? 'chip' : 'long')); return; }
+            }
+            var forced = null;
+            if (sim.d.chain && sim.d.chain.length) forced = findRole(a, sim.d.chain.shift());   // mid backline move: next man in the chain
+            else if (c.role === 8) forced = phaseTarget(c);                                     // scrum-half: forwards most phases, backline sometimes
+            if (forced || sim.d.forcePass || rand() < (toGo < 15 ? 0.55 : TUNE.pass)) { if (!tryPass(c, forced)) sim.dec = R(0.2, 0.45); }
+            else sim.dec = R(0.4, 0.8);
           }
-          if (sim.d.forcePass || rand() < (toGo < 15 ? 0.55 : TUNE.pass)) { if (!tryPass(c)) sim.dec = R(0.2, 0.45); }
-          else sim.dec = R(0.4, 0.8);
         }
         // contact
         var near = null;
@@ -333,7 +389,7 @@
           else if (rand() < 0.2 && tryPass(c)) { sim.stats.offloads++; near.slow = 0.6; return; }
           else { sim.d.down = c; startRuck(c.x, c.y, near); return; }
         }
-        if (sim.d.age > 7.5) { sim.d.down = c; startRuck(c.x, c.y, nearest(sim.teams[def], c.x, c.y)); }
+        if (c.immune <= 0 && sim.d.age > 7.5) { sim.d.down = c; startRuck(c.x, c.y, nearest(sim.teams[def], c.x, c.y)); }
         return;
       }
 
@@ -343,7 +399,7 @@
         sim.d.ra.forEach(function (p, k) { go(p, an.x - dd * (0.9 + k * 0.5), an.y + (k - 1) * 1.1); });
         sim.d.rd.forEach(function (p, k) { go(p, an.x + dd * (0.9 + k * 0.5), an.y + (k - 1) * 1.1); });
         var skipA = sim.d.ra.concat(sim.d.down ? [sim.d.down] : []);
-        attackShape(A, an.x, an.y, skipA);
+        attackShape(A, an.x - dd * 3, an.y, skipA);   // the rest of the pack holds off the breakdown rather than piling in
         defenceShape(other(A), an.x, an.y, 6, sim.d.rd);
         var sh = sim.teams[A][8]; if (skipA.indexOf(sh) < 0) go(sh, an.x - dd * 2.2, an.y + 0.6);
         sim.teams[A].forEach(function (p) { if (skipA.indexOf(p) < 0 && (p.x - an.x) * dd > -1.2) p.hurry = true; });
@@ -359,7 +415,7 @@
             var half = sim.teams[A][8]; half.x = an.x - dd * 1.2; half.y = an.y; half.vx = half.vy = 0;
             sim.d.down = null;
             if (rand() < TUNE.box && (dd > 0 ? TRY1 - an.x : an.x - TRY0) > 22) { sim.poss = A; sim.carrier = half; sim.ball.owner = half; startKick(half, false, 'box'); }
-            else startOpen(A, half, true);
+            else startOpen(A, half, true, false, true);
           }
         }
         return;
@@ -367,6 +423,7 @@
 
       if (ph === 'scrum') {
         var F = sim.poss, df = dirOf(F), sa = sim.anchor;
+        if (sim.pt < TUNE.pauseDur) { sim.players.forEach(function (p) { go(p, p.x, p.y); }); sim.ref.tx = sa.x; sim.ref.ty = clamp(sa.y + 6, 2, WID - 2); return; }   // a beat for the whistle before anyone sets
         var rows = [[-1.3, 0, 1.3], [-0.7, 0.7], [-1.3, 0, 1.3]], idx = 0;
         rows.forEach(function (row, ri) {
           row.forEach(function (off) {
@@ -387,9 +444,10 @@
 
       if (ph === 'lineout') {
         var T = sim.poss, dt2 = dirOf(T), la = sim.anchor, sg = la.y < WID / 2 ? 1 : -1;
+        if (sim.pt < TUNE.pauseDur) { sim.players.forEach(function (p) { go(p, p.x, p.y); }); sim.ref.tx = la.x; sim.ref.ty = la.y + sg * 3; return; }   // a beat for the whistle before anyone sets
         for (i = 0; i < 7; i++) {
-          go(sim.teams[T][i], la.x - 0.55, la.y + sg * (5 + i * 1.35));
-          go(sim.teams[other(T)][i], la.x + 0.55, la.y + sg * (5 + i * 1.35));
+          go(sim.teams[T][i], la.x - 0.55, la.y + sg * (5 + i * 1.7));
+          go(sim.teams[other(T)][i], la.x + 0.55, la.y + sg * (5 + i * 1.7));
         }
         go(sim.teams[T][7], la.x - dt2 * 3, la.y + sg * 4);
         go(sim.teams[other(T)][7], la.x + dt2 * 3, la.y + sg * 5);
@@ -399,16 +457,21 @@
           go(sim.teams[T][rle], la.x - dt2 * (10 + k * 1.5), la.y + sg * (12 + k * 4.5));
           go(sim.teams[other(T)][rle], la.x + dt2 * (10 + k * 1.5), la.y + sg * (12 + k * 4.5));
         });
-        sim.players.forEach(function (p) { if (p.role >= 9) p.hurry = true; });
+        sim.players.forEach(function (p) { p.hurry = true; });   // everyone sprints to form the lineout, not just the backs
         go(sim.teams[T][1], la.x - 0.3, la.y + sg * 1.1); // 2 hooker stands at the mark to throw in
         sim.ref.tx = la.x; sim.ref.ty = la.y + sg * 3;
-        if (!sim.d.thrown && sim.pt > 1.7) {
-          sim.d.thrown = true; b.x = la.x; b.y = la.y;
-          var jumper = sim.teams[T][3 + Math.floor(rand() * 4)]; // a lock or flanker (4-7) jumps
-          fly(la.x - 0.55, la.y + sg * (5 + jumper.role * 1.35), 0.55, 4.5, function () { sim.ball.owner = jumper; });
+        if (!sim.d.thrown) {
+          var lineReady = sim.teams[T].concat(sim.teams[other(T)]).filter(function (p) { return p.role < 7; })
+            .every(function (p) { return hyp(p.tx - p.x, p.ty - p.y) < 2.5; });
+          if ((lineReady && sim.pt > 1.1) || sim.pt > 4.2) {
+            sim.d.thrown = true; b.x = la.x; b.y = la.y;
+            var jumper = sim.teams[T][3 + Math.floor(rand() * 4)]; // a lock or flanker (4-7) jumps
+            fly(la.x - 0.55, la.y + sg * (5 + jumper.role * 1.7), 0.55, 4.5, function () { sim.ball.owner = jumper; });
+          }
         }
-        if (sim.pt > sim.d.dur) {
-          var half2 = sim.teams[T][8]; half2.vx = half2.vy = 0;
+        if (sim.d.thrown && sim.pt > sim.d.dur) {
+          var half2 = sim.teams[T][8];
+          half2.x = la.x - dt2 * 4; half2.y = la.y + sg * 9; half2.vx = half2.vy = 0;
           startOpen(T, half2, true);
         }
         return;
@@ -416,6 +479,7 @@
 
       if (ph === 'penalty') {
         var pa2 = sim.anchor, Bn = sim.poss, dB = dirOf(Bn);
+        if (sim.pt < TUNE.pauseDur) { sim.players.forEach(function (p) { go(p, p.x, p.y); }); sim.ref.tx = pa2.x - dirOf(Bn) * 3; sim.ref.ty = pa2.y + 5; return; }   // a beat for the whistle before anyone sets
         var tapper = nearest(sim.teams[Bn], pa2.x, pa2.y);
         attackShape(Bn, pa2.x, pa2.y, [tapper]);
         go(tapper, pa2.x, pa2.y);
@@ -501,7 +565,11 @@
       // nobody stands still: everyone shuffles, tracks the play and stays on their toes (less so inside a pack)
       var packed = sim.phase === 'ruck' || sim.phase === 'scrum' || sim.phase === 'lineout';
       for (j = 0; j < sim.players.length; j++) {
-        var pl = sim.players[j], near = packed && hyp(pl.tx - sim.anchor.x, pl.ty - sim.anchor.y) < 3.2, amp = TUNE.sway * (near ? 0.25 : 1);
+        var pl = sim.players[j];
+        // in a lineout the anchor sits at the touchline, well away from the line itself, so
+        // check discipline (roles 1-8) directly rather than distance to the anchor
+        var lineoutTight = sim.phase === 'lineout' && pl.role < 8;
+        var near = packed && (lineoutTight || hyp(pl.tx - sim.anchor.x, pl.ty - sim.anchor.y) < 3.2), amp = TUNE.sway * (near ? 0.25 : 1);
         if (pl === sim.carrier) continue;
         pl.tx = clamp(pl.tx + Math.sin(sim.time * pl.w + pl.ph) * amp, 0.5, LEN - 0.5);
         pl.ty = clamp(pl.ty + Math.cos(sim.time * pl.w * 0.83 + pl.ph * 1.7) * amp * 1.3, 0.5, WID - 0.5);
