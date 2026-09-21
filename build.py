@@ -12,7 +12,7 @@ from html import escape
 
 # ------------------------------------------------------------------ CONFIG
 SITE_NAME = "Jacklers"                       # single global site name
-TAGLINE = "The rugby publication serious fans have been waiting for."
+TAGLINE = "A boutique sports page looking to connect fans and friends."
 POSITIONING = "Independent rugby journalism and analysis."
 BASE_URL = "https://jacklers.co.uk"
 LASTMOD = "2026-09-19"
