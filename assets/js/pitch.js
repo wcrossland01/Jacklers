@@ -36,7 +36,7 @@
     };
     for (var t = 0; t < 2; t++) {
       for (var r = 0; r < 15; r++) {
-        var p = { w: R(1.5, 2.4), ph: R(0, 6.28), hurry: false, team: t, role: r, x: 60, y: 35, vx: 0, vy: 0, tx: 60, ty: 35, max: (r < 8 ? 5.0 : 6.0) + R(-0.3, 0.4),
+        var p = { w: R(1.5, 2.4), ph: R(0, 6.28), hurry: false, team: t, role: r, x: 60, y: 35, vx: 0, vy: 0, tx: 60, ty: 35, max: (r < 8 ? 4.5 : 5.4) + R(-0.3, 0.4),
                   jx: R(-0.8, 0.8), jy: R(-0.8, 0.8), immune: 0, slow: 0 };
         sim.players.push(p); sim.teams[t].push(p);
       }
@@ -260,7 +260,7 @@
         if (rand() < TUNE.knockOn) { // knock-on: scrum to the other side
           startScrum(other(a), r.x, r.y); return;
         }
-        giveBall(r); sim.dec = (sim.d.chain && sim.d.chain.length) ? 0.15 : R(0.3, 0.75);   // mid-move: keep it flowing quickly
+        giveBall(r); sim.dec = (sim.d.chain && sim.d.chain.length) ? R(0.55, 0.95) : R(0.3, 0.75);   // mid-move: run at your man before you release it
       });
       return true;
     }
@@ -325,6 +325,14 @@
         if (c.immune > 0) go(c, c.x + d * 24, c.y + (c.y < WID / 2 ? 1 : -1) * 3); else go(c, c.x + d * 9, c.y + open * 2.2);
         attackShape(a, sim.d.baseX + d * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax), c.y, [c]);
         defenceShape(def, sim.d.baseX, c.y, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
+        if (c.immune > 0) {   // a clean break: the nearest couple of team-mates shadow the ball rather than holding the wider shape
+          var mates = sim.teams[a].filter(function (p) { return p !== c; })
+            .sort(function (p, q) { return hyp(p.x - c.x, p.y - c.y) - hyp(q.x - c.x, q.y - c.y); });
+          for (var s = 0; s < Math.min(2, mates.length); s++) {
+            var m = mates[s], side = m.y < c.y ? -1 : 1;
+            go(m, c.x - d * (3 + s * 2.5), c.y + side * (3.5 + s * 1.5));
+          }
+        }
         sim.teams[def].forEach(function (q) {
           q.hurry = (q.x - c.x) * d < 0.5;
           if (q.hurry) {                                            // beaten: turn and cut the runner off
@@ -334,6 +342,10 @@
         });
         var chaser = nearest(sim.teams[def], c.x, c.y);
         if (hyp(chaser.x - c.x, chaser.y - c.y) < 5) go(chaser, c.x + d * 0.6, c.y);
+        // mid backline move: run straight at the defender to draw him rather than passing on a clock
+        if (c.immune <= 0 && sim.d.chain && sim.d.chain.length && hyp(chaser.x - c.x, chaser.y - c.y) < 3.2) {
+          sim.dec = Math.min(sim.dec, 0.05);
+        }
         refFollow(c.x, c.y, d);
         // try
         if ((d > 0 && c.x >= TRY1) || (d < 0 && c.x <= TRY0)) { startTry(c); return; }
