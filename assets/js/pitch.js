@@ -14,7 +14,7 @@
 
   var LEN = 120, WID = 70, MID = 60, TRY0 = 10, TRY1 = 110;
   // Tuning knobs for the match (all probabilities per event)
-  var TUNE = { sway: 0.75, hurry: 1.6, hustle: 1.6, recover: 1.4, recoverFrom: 6, recoverSlope: 0.04, teamRun: 5, teamRunMax: 14, missRedZone: 0.7, lineDepth: 9.5, lineSpeed: 1.6, momentum: 2.6, kickOwn: 0.32, kickOpp: 0.12, pass: 0.74, missTackle: 0.4, knockOn: 0.006, turnover: 0.05, penalty: 0.02, box: 0.16, carrierSpeed: 1.1, breakRun: 1.4, wideChance: 0.6, pauseDur: 0.55 };
+  var TUNE = { sway: 0.75, hurry: 1.6, hustle: 1.6, recover: 1.4, recoverFrom: 6, recoverSlope: 0.04, teamRun: 5, teamRunMax: 14, missRedZone: 0.7, lineDepth: 9.5, lineSpeed: 1.6, momentum: 2.6, kickOwn: 0.32, kickOpp: 0.12, pass: 0.74, missTackle: 0.4, knockOn: 0.006, turnover: 0.05, penalty: 0.02, box: 0.16, carrierSpeed: 1.1, breakRun: 1.4, wideChance: 0.6, pauseDur: 0.55, shapeDrift: 3.6 };
   var COL = { red: '#D0343F', white: '#F6F3EE', ball: '#E8B84A', ref: '#6FD3A2', line: '246,243,238' };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -121,7 +121,7 @@
     function startOpen(team, carrier, forcePass, noKick, continuePhase) {
       sim.poss = team; giveBall(carrier);
       sim.seq = continuePhase ? (sim.seq || 0) + 1 : 0;   // phases since the last set-piece/turnover: only recycled ruck ball counts
-      sim.d = { refSide: sim.d.refSide || 1, forcePass: !!forcePass, age: 0, baseX: carrier.x, kickChecked: !!noKick };
+      sim.d = { refSide: sim.d.refSide || 1, forcePass: !!forcePass, age: 0, baseX: carrier.x, kickChecked: !!noKick, shapeY: carrier.y };
       sim.dec = forcePass ? 0.05 : R(0.3, 0.7);
       setPhase('open');
     }
@@ -309,10 +309,11 @@
         if (!c) { // a pass is in the air: keep shape around the ball, but nobody may stand ahead of where it was thrown from
           var pa0 = sim.poss, d0 = dirOf(pa0), rc = sim.d.receiver;
           sim.d.age = (sim.d.age || 0) + dt;
+          sim.d.shapeY += clamp(b.y - sim.d.shapeY, -TUNE.shapeDrift * dt, TUNE.shapeDrift * dt);   // the shape drifts across, it doesn't snap to the ball
           var wantAx0 = sim.d.baseX + d0 * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax);
           var ax0 = d0 > 0 ? Math.min(wantAx0, sim.d.passerX) : Math.max(wantAx0, sim.d.passerX);
-          attackShape(pa0, ax0, b.y, rc ? [rc] : null);
-          defenceShape(other(pa0), sim.d.baseX, b.y, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
+          attackShape(pa0, ax0, sim.d.shapeY, rc ? [rc] : null);
+          defenceShape(other(pa0), sim.d.baseX, sim.d.shapeY, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
           sim.teams[pa0].forEach(function (p) { if ((p.x - sim.d.passerX) * d0 > 0.3) p.hurry = true; });   // caught offside: sprint back now
           if (rc) { var rcx = d0 > 0 ? Math.min(b.x + d0 * 4, sim.d.passerX) : Math.max(b.x + d0 * 4, sim.d.passerX); go(rc, rcx, b.y); }
           go(nearest(sim.teams[other(pa0)], b.x, b.y), b.x + d0 * 2, b.y);
@@ -325,11 +326,12 @@
         // carrier runs at the line, drifting to space
         var open = c.y < WID / 2 ? 1 : -1;
         if (c.immune > 0) go(c, c.x + d * 24, c.y + (c.y < WID / 2 ? 1 : -1) * 3); else go(c, c.x + d * 9, c.y + open * 2.2);
+        sim.d.shapeY += clamp(c.y - sim.d.shapeY, -TUNE.shapeDrift * dt, TUNE.shapeDrift * dt);   // the shape drifts across, it doesn't snap to the carrier
         // support may never be shown ahead of the ball carrier - that's offside in open play, no exceptions
         var wantAx = sim.d.baseX + d * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax);
         var ax = d > 0 ? Math.min(wantAx, c.x) : Math.max(wantAx, c.x);
-        attackShape(a, ax, c.y, [c]);
-        defenceShape(def, sim.d.baseX, c.y, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
+        attackShape(a, ax, sim.d.shapeY, [c]);
+        defenceShape(def, sim.d.baseX, sim.d.shapeY, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
         sim.teams[a].forEach(function (p) { if (p !== c && (p.x - c.x) * d > 0.3) p.hurry = true; });   // caught offside: sprint back now
         if (c.immune > 0) {   // a clean break: the nearest couple of team-mates shadow the ball rather than holding the wider shape
           var mates = sim.teams[a].filter(function (p) { return p !== c; })
