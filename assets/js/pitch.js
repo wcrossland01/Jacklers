@@ -14,7 +14,7 @@
 
   var LEN = 120, WID = 70, MID = 60, TRY0 = 10, TRY1 = 110;
   // Tuning knobs for the match (all probabilities per event)
-  var TUNE = { sway: 0.75, hurry: 1.6, hustle: 1.6, recover: 1.4, recoverFrom: 6, recoverSlope: 0.04, teamRun: 5, teamRunMax: 14, missRedZone: 0.7, lineDepth: 9.5, lineSpeed: 1.6, momentum: 2.6, kickOwn: 0.32, kickOpp: 0.12, pass: 0.74, missTackle: 0.4, knockOn: 0.006, turnover: 0.05, penalty: 0.02, box: 0.16, carrierSpeed: 1.1, breakRun: 1.4, wideChance: 0.6 };
+  var TUNE = { sway: 0.75, hurry: 1.6, hustle: 1.6, recover: 1.4, recoverFrom: 6, recoverSlope: 0.04, teamRun: 5, teamRunMax: 14, missRedZone: 0.7, lineDepth: 9.5, lineSpeed: 1.6, momentum: 2.6, kickOwn: 0.32, kickOpp: 0.12, pass: 0.74, missTackle: 0.4, knockOn: 0.006, turnover: 0.05, penalty: 0.02, box: 0.16, carrierSpeed: 1.1, breakRun: 1.4, wideChance: 0.6, pauseDur: 0.55 };
   var COL = { red: '#D0343F', white: '#F6F3EE', ball: '#E8B84A', ref: '#6FD3A2', line: '246,243,238' };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -136,7 +136,11 @@
       fa.sort(function (p, q) { return hyp(p.x - ax, p.y - ay) - hyp(q.x - ax, q.y - ay); });
       var fd = roleSet(other(a), 0, 7).filter(function (p) { return p !== tackler; });
       fd.sort(function (p, q) { return hyp(p.x - ax, p.y - ay) - hyp(q.x - ax, q.y - ay); });
-      sim.d = { down: sim.d.down, tackler: tackler, ra: fa.slice(0, 3), rd: [tackler].concat(fd.slice(0, 2)),
+      // keep the breakdown itself small - the ball carrier and tackler plus, usually, one or two more:
+      // never more than 4 bodies committed, most often 2 or 3
+      var extraRoll = rand(), extra = extraRoll < 0.3 ? 0 : extraRoll < 0.8 ? 1 : 2, raExtra = 0, rdExtra = 0;
+      for (var e = 0; e < extra; e++) { if (rand() < 0.5) raExtra++; else rdExtra++; }
+      sim.d = { down: sim.d.down, tackler: tackler, ra: fa.slice(0, raExtra), rd: [tackler].concat(fd.slice(0, rdExtra)),
                 dur: R(1.9, 2.8), refSide: sim.d.refSide };
       pulse('tackle', ax, ay); sim.stats.tackles++;
       setPhase('ruck');
@@ -375,7 +379,7 @@
         sim.d.ra.forEach(function (p, k) { go(p, an.x - dd * (0.9 + k * 0.5), an.y + (k - 1) * 1.1); });
         sim.d.rd.forEach(function (p, k) { go(p, an.x + dd * (0.9 + k * 0.5), an.y + (k - 1) * 1.1); });
         var skipA = sim.d.ra.concat(sim.d.down ? [sim.d.down] : []);
-        attackShape(A, an.x, an.y, skipA);
+        attackShape(A, an.x - dd * 3, an.y, skipA);   // the rest of the pack holds off the breakdown rather than piling in
         defenceShape(other(A), an.x, an.y, 6, sim.d.rd);
         var sh = sim.teams[A][8]; if (skipA.indexOf(sh) < 0) go(sh, an.x - dd * 2.2, an.y + 0.6);
         sim.teams[A].forEach(function (p) { if (skipA.indexOf(p) < 0 && (p.x - an.x) * dd > -1.2) p.hurry = true; });
@@ -399,6 +403,7 @@
 
       if (ph === 'scrum') {
         var F = sim.poss, df = dirOf(F), sa = sim.anchor;
+        if (sim.pt < TUNE.pauseDur) { sim.players.forEach(function (p) { go(p, p.x, p.y); }); sim.ref.tx = sa.x; sim.ref.ty = clamp(sa.y + 6, 2, WID - 2); return; }   // a beat for the whistle before anyone sets
         var rows = [[-1.3, 0, 1.3], [-0.7, 0.7], [-1.3, 0, 1.3]], idx = 0;
         rows.forEach(function (row, ri) {
           row.forEach(function (off) {
@@ -419,6 +424,7 @@
 
       if (ph === 'lineout') {
         var T = sim.poss, dt2 = dirOf(T), la = sim.anchor, sg = la.y < WID / 2 ? 1 : -1;
+        if (sim.pt < TUNE.pauseDur) { sim.players.forEach(function (p) { go(p, p.x, p.y); }); sim.ref.tx = la.x; sim.ref.ty = la.y + sg * 3; return; }   // a beat for the whistle before anyone sets
         for (i = 0; i < 7; i++) {
           go(sim.teams[T][i], la.x - 0.55, la.y + sg * (5 + i * 1.7));
           go(sim.teams[other(T)][i], la.x + 0.55, la.y + sg * (5 + i * 1.7));
@@ -453,6 +459,7 @@
 
       if (ph === 'penalty') {
         var pa2 = sim.anchor, Bn = sim.poss, dB = dirOf(Bn);
+        if (sim.pt < TUNE.pauseDur) { sim.players.forEach(function (p) { go(p, p.x, p.y); }); sim.ref.tx = pa2.x - dirOf(Bn) * 3; sim.ref.ty = pa2.y + 5; return; }   // a beat for the whistle before anyone sets
         var tapper = nearest(sim.teams[Bn], pa2.x, pa2.y);
         attackShape(Bn, pa2.x, pa2.y, [tapper]);
         go(tapper, pa2.x, pa2.y);
