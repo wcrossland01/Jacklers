@@ -1,4 +1,7 @@
-/* Jacklers hero pitch  (version 5: players chase back, sprint onside, and never stand still)
+/* Jacklers hero pitch  (version 6: numbered 1-15, each position holds its real
+   place and role - tight five close to the ball, loose forwards linking wide,
+   half-backs and centres flat, wings on the touchline, full-back sweeping deep
+   - and a calmer pace so the shape reads clearly while defenders track back.)
    A detailed rugby union pitch (plan view, correct markings) with an automated,
    endless, random game: 15 Reds v 15 Whites, a referee and a ball.
    Decorative only: it runs on the home page, pauses when off screen, and respects
@@ -33,7 +36,7 @@
     };
     for (var t = 0; t < 2; t++) {
       for (var r = 0; r < 15; r++) {
-        var p = { w: R(1.5, 2.4), ph: R(0, 6.28), hurry: false, team: t, role: r, x: 60, y: 35, vx: 0, vy: 0, tx: 60, ty: 35, max: (r < 8 ? 5.5 : 6.5) + R(-0.3, 0.4),
+        var p = { w: R(1.5, 2.4), ph: R(0, 6.28), hurry: false, team: t, role: r, x: 60, y: 35, vx: 0, vy: 0, tx: 60, ty: 35, max: (r < 8 ? 5.0 : 6.0) + R(-0.3, 0.4),
                   jx: R(-0.8, 0.8), jy: R(-0.8, 0.8), immune: 0, slow: 0 };
         sim.players.push(p); sim.teams[t].push(p);
       }
@@ -60,25 +63,35 @@
     /* ---------- shape helpers ---------- */
     function attackShape(team, ax, ay, skip) {
       var d = dirOf(team), os = ay < WID / 2 ? 1 : -1, P = sim.teams[team];
-      var slots = { 9: [6, 3], 10: [12, 4], 11: [19, 5], 12: [26, 6], 13: [-14, 6], 14: [-5, 11] };
       P.forEach(function (p) {
         if (skip && skip.indexOf(p) > -1) return;
-        if (p.role === 8) { go(p, ax - d * 2.6 + p.jx * 0.2, ay + os * 1.2); return; }
-        if (p.role >= 9) { var s = slots[p.role]; go(p, ax - d * (s[1] + p.jx * 0.4), ay + os * s[0] + p.jy * 0.5); return; }
-        go(p, ax - d * (2 + (p.role % 4) * 1.4 + p.jx * 0.3), ay + (p.role - 3.5) * 3.4 * (os > 0 ? 1 : 1) + p.jy * 0.4);
+        if (p.role === 8) { go(p, ax - d * 2.6 + p.jx * 0.2, ay + os * 1.2); return; }                          // 9 scrum-half: snipes at the base
+        if (p.role === 9) { go(p, ax - d * (2.6 + p.jx * 0.3), ay + os * (5.5 + p.jy * 0.6)); return; }         // 10 fly-half: flat, first receiver
+        if (p.role === 11) { go(p, ax - d * (3.6 + p.jx * 0.3), ay + os * (11 + p.jy * 0.6)); return; }         // 12 inside centre
+        if (p.role === 12) { go(p, ax - d * (4.6 + p.jx * 0.3), ay + os * (17.5 + p.jy * 0.6)); return; }       // 13 outside centre: drifts wider
+        if (p.role === 10) { go(p, ax - d * (5.5 + p.jx * 0.3), clamp(3 + p.jy, 1.5, WID / 2 - 1)); return; }   // 11 left wing: holds the near touchline
+        if (p.role === 13) { go(p, ax - d * (5.5 + p.jx * 0.3), clamp(WID - 3 + p.jy, WID / 2 + 1, WID - 1.5)); return; } // 14 right wing: holds the far touchline
+        if (p.role === 14) { go(p, ax - d * (11 + p.jy * 0.4), clamp(WID / 2 + (ay - WID / 2) * 0.3 + p.jx * 3, 6, WID - 6)); return; } // 15 full-back: trails, covering
+        if (p.role < 5) { go(p, ax - d * (1.6 + (p.role % 3) * 1.1 + p.jx * 0.25), ay + (p.role - 2) * 1.9 + p.jy * 0.35); return; }      // tight five: hug the ball
+        go(p, ax - d * (3.6 + (p.role - 5) * 1.3 + p.jx * 0.3), ay + (p.role - 6) * 4.4 * os * 0.4 + p.jy * 0.45);                        // 6/7/8: loose forwards link wider
       });
     }
     function defenceShape(team, ax, ay, depth, skip) {
       var da = dirOf(other(team)), lineX = ax + da * depth;
       var P = sim.teams[team].filter(function (p) { return (!skip || skip.indexOf(p) < 0); });
-      var line = P.filter(function (p) { return p.role < 12; }).sort(function (a, b) { return a.y - b.y; });
-      var back = P.filter(function (p) { return p.role >= 12; });
+      var backRoles = [10, 13, 14];   // 11, 14, 15: the back three drop off the front line to cover
+      var line = P.filter(function (p) { return backRoles.indexOf(p.role) < 0; }).sort(function (a, b) { return a.y - b.y; });
+      var back = P.filter(function (p) { return backRoles.indexOf(p.role) > -1; });
       var n = line.length, span = 46;
       line.forEach(function (p, i) {
         var u = n > 1 ? i / (n - 1) : 0.5;
         go(p, lineX + da * (((i % 2) * 0.8) + p.jx * 0.15), clamp(ay + (u - 0.5) * span, 3, WID - 3));
       });
-      back.forEach(function (p, i) { go(p, lineX + da * (11 + i * 2.5), clamp(ay + (i - 1) * 20, 5, WID - 5)); });
+      back.forEach(function (p) {
+        if (p.role === 14) { go(p, lineX + da * 15, clamp(ay + (ay < WID / 2 ? 6 : -6), 8, WID - 8)); return; }   // 15 full-back: deepest, sweeps behind
+        var side = p.role === 10 ? -1 : 1;                                                                        // 11 covers the left edge, 14 the right
+        go(p, lineX + da * 9, clamp(WID / 2 + side * 22, 4, WID - 4));
+      });
     }
     function refFollow(x, y, d) {
       var side = sim.d.refSide || 1;
@@ -387,11 +400,11 @@
           go(sim.teams[other(T)][rle], la.x + dt2 * (10 + k * 1.5), la.y + sg * (12 + k * 4.5));
         });
         sim.players.forEach(function (p) { if (p.role >= 9) p.hurry = true; });
-        var thr = sim.teams[T][8]; // scrum-half throws in (kept simple)
+        go(sim.teams[T][1], la.x - 0.3, la.y + sg * 1.1); // 2 hooker stands at the mark to throw in
         sim.ref.tx = la.x; sim.ref.ty = la.y + sg * 3;
         if (!sim.d.thrown && sim.pt > 1.7) {
           sim.d.thrown = true; b.x = la.x; b.y = la.y;
-          var jumper = sim.teams[T][2 + Math.floor(rand() * 3)];
+          var jumper = sim.teams[T][3 + Math.floor(rand() * 4)]; // a lock or flanker (4-7) jumps
           fly(la.x - 0.55, la.y + sg * (5 + jumper.role * 1.35), 0.55, 4.5, function () { sim.ball.owner = jumper; });
         }
         if (sim.pt > sim.d.dur) {
@@ -610,12 +623,16 @@
       ctx.strokeStyle = pu.type === 'whistle' ? 'rgba(111,211,162,' + (0.7 * (1 - u)) + ')' : 'rgba(246,243,238,' + (0.55 * (1 - u)) + ')';
       ctx.lineWidth = 1.5; ctx.stroke();
     }
-    // players
+    // players (labelled with their shirt number, 1-15)
+    ctx.font = '700 ' + Math.max(6.5, r * 1.15).toFixed(1) + 'px "Hanken Grotesk", Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     for (i = 0; i < sim.players.length; i++) {
       var pl = sim.players[i]; p = lay.P(pl.x, pl.y);
       ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, 6.2832);
       ctx.fillStyle = pl.team === 0 ? COL.red : COL.white; ctx.fill();
       ctx.lineWidth = 1; ctx.strokeStyle = pl.team === 0 ? 'rgba(255,255,255,0.35)' : 'rgba(10,17,32,0.45)'; ctx.stroke();
+      ctx.fillStyle = pl.team === 0 ? 'rgba(255,255,255,0.92)' : 'rgba(10,17,32,0.85)';
+      ctx.fillText(String(pl.role + 1), p[0], p[1] + r * 0.05);
     }
     // ball carrier ring
     if (sim.carrier) {
