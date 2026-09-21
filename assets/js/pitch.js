@@ -112,10 +112,9 @@
         if (p.role === 9) { go(p, MID - dk * 0.4, WID / 2); return; }
         go(p, MID - dk * (1.2 + (p.role % 3) * 0.8), 5 + (p.role / 14) * 60);
       });
-      var fw = [8, 14, 20, 26, 32, 38, 44, 50, 56];
-      sim.teams[rt].forEach(function (p) {
-        if (p.role < 8) go(p, MID + dk * (11.5 + (p.role % 2) * 1.5), 9 + p.role * 7.5);
-        else { var k = p.role - 8; go(p, MID + dk * (22 + k * 3), [30, 22, 48, 12, 58, 28, 35][k]); }
+      sim.teams[rt].forEach(function (p) {   // nobody starts shallower than the shortest possible kick (24m) - no one is caught offside at the catch
+        if (p.role < 8) go(p, MID + dk * (24 + (p.role % 4) * 2), 9 + p.role * 7.5);
+        else { var k = p.role - 8; go(p, MID + dk * (24 + k * 3), [30, 22, 48, 12, 58, 28, 35][k]); }
       });
       sim.ref.tx = MID - dk * 4; sim.ref.ty = 26;
     }
@@ -254,7 +253,7 @@
       var dist = hyp(r.x - c.x, r.y - c.y), dur = Math.max(0.28, dist / 15.5);
       var lx = r.x + r.vx * dur * 0.8, ly = r.y + r.vy * dur * 0.8;
       sim.ball.x = c.x; sim.ball.y = c.y; sim.carrier = null;
-      sim.d.receiver = r; sim.stats.passes++;
+      sim.d.receiver = r; sim.d.passerX = c.x; sim.stats.passes++;   // the offside line while it's in the air: where it was thrown from
       fly(lx, ly, dur, 1.6, function () {
         sim.d.forcePass = false;
         if (rand() < TUNE.knockOn) { // knock-on: scrum to the other side
@@ -307,12 +306,15 @@
 
       if (ph === 'open') {
         var c = sim.carrier;
-        if (!c) { // a pass is in the air: keep shape around the ball and let the receiver run on to it
+        if (!c) { // a pass is in the air: keep shape around the ball, but nobody may stand ahead of where it was thrown from
           var pa0 = sim.poss, d0 = dirOf(pa0), rc = sim.d.receiver;
           sim.d.age = (sim.d.age || 0) + dt;
-          attackShape(pa0, sim.d.baseX + d0 * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax), b.y, rc ? [rc] : null);
+          var wantAx0 = sim.d.baseX + d0 * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax);
+          var ax0 = d0 > 0 ? Math.min(wantAx0, sim.d.passerX) : Math.max(wantAx0, sim.d.passerX);
+          attackShape(pa0, ax0, b.y, rc ? [rc] : null);
           defenceShape(other(pa0), sim.d.baseX, b.y, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
-          if (rc) go(rc, b.x + d0 * 4, b.y);
+          sim.teams[pa0].forEach(function (p) { if ((p.x - sim.d.passerX) * d0 > 0.3) p.hurry = true; });   // caught offside: sprint back now
+          if (rc) { var rcx = d0 > 0 ? Math.min(b.x + d0 * 4, sim.d.passerX) : Math.max(b.x + d0 * 4, sim.d.passerX); go(rc, rcx, b.y); }
           go(nearest(sim.teams[other(pa0)], b.x, b.y), b.x + d0 * 2, b.y);
           refFollow(b.x, b.y, d0);
           return;
@@ -323,8 +325,12 @@
         // carrier runs at the line, drifting to space
         var open = c.y < WID / 2 ? 1 : -1;
         if (c.immune > 0) go(c, c.x + d * 24, c.y + (c.y < WID / 2 ? 1 : -1) * 3); else go(c, c.x + d * 9, c.y + open * 2.2);
-        attackShape(a, sim.d.baseX + d * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax), c.y, [c]);
+        // support may never be shown ahead of the ball carrier - that's offside in open play, no exceptions
+        var wantAx = sim.d.baseX + d * Math.min(sim.d.age * TUNE.teamRun, TUNE.teamRunMax);
+        var ax = d > 0 ? Math.min(wantAx, c.x) : Math.max(wantAx, c.x);
+        attackShape(a, ax, c.y, [c]);
         defenceShape(def, sim.d.baseX, c.y, TUNE.lineDepth - Math.min(sim.d.age * TUNE.lineSpeed, 6), null);
+        sim.teams[a].forEach(function (p) { if (p !== c && (p.x - c.x) * d > 0.3) p.hurry = true; });   // caught offside: sprint back now
         if (c.immune > 0) {   // a clean break: the nearest couple of team-mates shadow the ball rather than holding the wider shape
           var mates = sim.teams[a].filter(function (p) { return p !== c; })
             .sort(function (p, q) { return hyp(p.x - c.x, p.y - c.y) - hyp(q.x - c.x, q.y - c.y); });
