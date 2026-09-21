@@ -335,20 +335,22 @@
         if ((d > 0 && c.x >= TRY1) || (d < 0 && c.x <= TRY0)) { startTry(c); return; }
         // out of play
         if (c.y <= 0.7 || c.y >= WID - 0.7) { startLineout(def, c.x, c.y < WID / 2 ? 0 : WID); return; }
-        // decisions
-        sim.dec -= dt;
-        if (sim.dec <= 0) {
-          var zone = (c.x - MID) * d, toGo = d > 0 ? TRY1 - c.x : c.x - TRY0;
-          if (!sim.d.forcePass && !sim.d.kickChecked && (c.role === 8 || c.role === 9)) {   // only 9 or 10 put boot to ball, one chance per possession
-            sim.d.kickChecked = true;
-            var kp = toGo > 18 ? (zone < 8 ? TUNE.kickOwn : TUNE.kickOpp) : 0;
-            if (rand() < kp) { startKick(c, false, toGo < 38 ? 'chip' : zone < 6 ? (rand() < 0.75 ? 'long' : 'chip') : (rand() < 0.6 ? 'chip' : 'long')); return; }
+        // decisions: a clean break just runs - no pass, no kick, no getting hauled into a ruck by the clock
+        if (c.immune <= 0) {
+          sim.dec -= dt;
+          if (sim.dec <= 0) {
+            var zone = (c.x - MID) * d, toGo = d > 0 ? TRY1 - c.x : c.x - TRY0;
+            if (!sim.d.forcePass && !sim.d.kickChecked && (c.role === 8 || c.role === 9)) {   // only 9 or 10 put boot to ball, one chance per possession
+              sim.d.kickChecked = true;
+              var kp = toGo > 18 ? (zone < 8 ? TUNE.kickOwn : TUNE.kickOpp) : 0;
+              if (rand() < kp) { startKick(c, false, toGo < 38 ? 'chip' : zone < 6 ? (rand() < 0.75 ? 'long' : 'chip') : (rand() < 0.6 ? 'chip' : 'long')); return; }
+            }
+            var forced = null;
+            if (sim.d.chain && sim.d.chain.length) forced = findRole(a, sim.d.chain.shift());   // mid backline move: next man in the chain
+            else if (c.role === 8) forced = phaseTarget(c);                                     // scrum-half: forwards most phases, backline sometimes
+            if (forced || sim.d.forcePass || rand() < (toGo < 15 ? 0.55 : TUNE.pass)) { if (!tryPass(c, forced)) sim.dec = R(0.2, 0.45); }
+            else sim.dec = R(0.4, 0.8);
           }
-          var forced = null;
-          if (sim.d.chain && sim.d.chain.length) forced = findRole(a, sim.d.chain.shift());   // mid backline move: next man in the chain
-          else if (c.role === 8) forced = phaseTarget(c);                                     // scrum-half: forwards most phases, backline sometimes
-          if (forced || sim.d.forcePass || rand() < (toGo < 15 ? 0.55 : TUNE.pass)) { if (!tryPass(c, forced)) sim.dec = R(0.2, 0.45); }
-          else sim.dec = R(0.4, 0.8);
         }
         // contact
         var near = null;
@@ -363,7 +365,7 @@
           else if (rand() < 0.2 && tryPass(c)) { sim.stats.offloads++; near.slow = 0.6; return; }
           else { sim.d.down = c; startRuck(c.x, c.y, near); return; }
         }
-        if (sim.d.age > 7.5) { sim.d.down = c; startRuck(c.x, c.y, nearest(sim.teams[def], c.x, c.y)); }
+        if (c.immune <= 0 && sim.d.age > 7.5) { sim.d.down = c; startRuck(c.x, c.y, nearest(sim.teams[def], c.x, c.y)); }
         return;
       }
 
