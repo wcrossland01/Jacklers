@@ -60,10 +60,8 @@ button, input, select { font: inherit; color: inherit; }
 /* ---------- Header ---------- */
 .site-header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--line-dark); }
 .header-row { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 4.25rem; }
-.brand {
-  font-family: var(--serif); font-size: 1.85rem; font-weight: 600; letter-spacing: -0.01em;
-  text-decoration: none; line-height: 1;
-}
+.brand { display: inline-flex; align-items: center; line-height: 0; text-decoration: none; }
+.brand img { height: 2.75rem; width: auto; display: block; }
 .nav ul { display: flex; align-items: center; gap: 0.25rem 1.35rem; flex-wrap: wrap; }
 .nav a {
   display: inline-block; font-size: 0.9rem; font-weight: 500; text-decoration: none;
@@ -105,7 +103,20 @@ button, input, select { font: inherit; color: inherit; }
 
 /* ---------- Home hero ---------- */
 .hero { position: relative; overflow: hidden; }
-.hero__pitch { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hero { min-height: min(88vh, 46rem); display: flex; align-items: center; }
+.hero__pitch { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.hero::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(10,17,32,0.94) 0%, rgba(10,17,32,0.78) 38%, rgba(10,17,32,0.2) 72%, rgba(10,17,32,0) 100%);
+}
+@media (max-width: 800px) {
+  .hero::before { background: linear-gradient(180deg, rgba(10,17,32,0.92) 0%, rgba(10,17,32,0.72) 55%, rgba(10,17,32,0.25) 100%); }
+}
+.hero__score {
+  position: absolute; z-index: 2; right: var(--gutter); bottom: 1rem; font-size: 0.82rem; font-weight: 500;
+  color: var(--mist); letter-spacing: 0.02em;
+}
+@media (max-width: 800px) { .hero__score { left: var(--gutter); right: auto; } }
 .hero__pitch path { fill: none; stroke: var(--line-dark); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .hero__pitch .is-halfway { stroke: var(--red); stroke-width: 2; }
 .hero__pitch path {
@@ -120,7 +131,7 @@ button, input, select { font: inherit; color: inherit; }
 .hero__pitch path:nth-child(7) { animation-delay: 0.9s; }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 
-.hero__inner { position: relative; padding-top: clamp(4rem, 12vw, 9rem); padding-bottom: clamp(4rem, 11vw, 8rem); }
+.hero__inner { position: relative; z-index: 2; width: 100%; padding-top: clamp(4rem, 12vw, 9rem); padding-bottom: clamp(4rem, 11vw, 8rem); }
 .hero h1 { display: block; }
 .hero__name {
   display: block; font-size: clamp(4.5rem, 17vw, 12rem); font-weight: 500; line-height: 0.9;
@@ -297,7 +308,8 @@ table.data td.is-empty .empty { border-top: 0; padding: 1.5rem 0.75rem; }
 .footer-grid p, .footer-grid a { color: var(--mist); }
 .footer-grid li a { display: inline-block; padding: 0.3rem 0; text-decoration: none; }
 .footer-grid li a:hover { color: var(--paper); text-decoration: underline; }
-.footer-brand { font-family: var(--serif); font-size: 1.8rem; color: var(--paper); margin-bottom: 0.6rem; }
+.footer-brand { margin: 0 0 1rem; line-height: 0; }
+.footer-brand img { height: 3.4rem; width: auto; display: block; }
 .site-footer .signup input[type="email"] { background: var(--navy); }
 .footer-base { border-top: 1px solid var(--line-dark); padding: 1.25rem 0 2rem; color: var(--mist); font-size: 0.875rem; }
 @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
