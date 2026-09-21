@@ -80,7 +80,7 @@ function articleMeta(a) {
   const desc = m.standfirst || plain.slice(0, 155);
   const title = m.title + ' | ' + SITE;
   const img = C.safeUrl(m.heroImage || '');
-  const imgAbs = img ? (img.startsWith('/') ? BASE + img : img) : '';
+  const imgAbs = img ? (img.startsWith('/') ? BASE + img : img) : BASE + '/assets/og-default.png';
   const ld = { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: m.title, datePublished: m.date,
     author: m.author ? [{ '@type': 'Person', name: m.author }] : undefined,
     publisher: { '@type': 'Organization', name: SITE }, mainEntityOfPage: url, image: imgAbs ? [imgAbs] : undefined,
@@ -98,7 +98,7 @@ function articleMeta(a) {
     '<meta property="og:url" content="' + url + '">',
     imgAbs ? '<meta property="og:image" content="' + e(imgAbs) + '">' : '',
     '<meta property="article:published_time" content="' + e(m.date) + '">',
-    '<meta name="twitter:card" content="' + (imgAbs ? 'summary_large_image' : 'summary') + '">',
+    '<meta name="twitter:card" content="summary_large_image">',
     '<meta name="twitter:title" content="' + e(title) + '">',
     '<meta name="twitter:description" content="' + e(desc) + '">',
     imgAbs ? '<meta name="twitter:image" content="' + e(imgAbs) + '">' : '',

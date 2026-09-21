@@ -61,9 +61,11 @@ button, input, select { font: inherit; color: inherit; }
 .site-header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--line-dark); }
 .header-row { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; min-height: 4.25rem; }
 .brand {
+  display: inline-flex; align-items: center; gap: 0.7rem;
   font-family: var(--serif); font-size: 1.85rem; font-weight: 600; letter-spacing: -0.01em;
   text-decoration: none; line-height: 1;
 }
+.brand img { height: 2.5rem; width: auto; flex: none; }
 .nav ul { display: flex; align-items: center; gap: 0.25rem 1.35rem; flex-wrap: wrap; }
 .nav a {
   display: inline-block; font-size: 0.9rem; font-weight: 500; text-decoration: none;
@@ -297,7 +299,8 @@ table.data td.is-empty .empty { border-top: 0; padding: 1.5rem 0.75rem; }
 .footer-grid p, .footer-grid a { color: var(--mist); }
 .footer-grid li a { display: inline-block; padding: 0.3rem 0; text-decoration: none; }
 .footer-grid li a:hover { color: var(--paper); text-decoration: underline; }
-.footer-brand { font-family: var(--serif); font-size: 1.8rem; color: var(--paper); margin-bottom: 0.6rem; }
+.footer-brand { display: flex; align-items: center; gap: 0.7rem; font-family: var(--serif); font-size: 1.8rem; color: var(--paper); margin-bottom: 0.6rem; }
+.footer-brand img { height: 3.4rem; width: auto; }
 .site-footer .signup input[type="email"] { background: var(--navy); }
 .footer-base { border-top: 1px solid var(--line-dark); padding: 1.25rem 0 2rem; color: var(--mist); font-size: 0.875rem; }
 @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }

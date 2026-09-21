@@ -70,10 +70,13 @@ def head(title, desc, path, noindex=False):
 <meta property="og:title" content="{E(full_title)}">
 <meta property="og:description" content="{E(desc)}">
 <meta property="og:url" content="{url}">
-<meta name="twitter:card" content="summary">
+<meta property="og:image" content="{BASE_URL}/assets/og-default.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{BASE_URL}/assets/og-default.png">
 <meta name="twitter:title" content="{E(full_title)}">
 <meta name="twitter:description" content="{E(desc)}">
-<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 {FONTS}
 <link rel="stylesheet" href="/assets/css/site.css">
 </head>
@@ -91,7 +94,7 @@ def header(path):
 <template id="tpl-empty-icon">{GOALPOSTS}</template>
 <header class="site-header on-dark">
 <div class="wrap header-row">
-<a class="brand" href="/">{E(SITE_NAME)}</a>
+<a class="brand" href="/"><img src="/assets/logo/head-light.svg" alt="" width="31" height="40"><span>{E(SITE_NAME)}</span></a>
 <nav class="nav" id="site-nav" aria-label="Primary"><ul>{''.join(items)}</ul></nav>
 <div class="header-tools">
 <a class="icon-btn" href="/search/" aria-label="Search">{SEARCH_ICON}</a>
@@ -129,7 +132,7 @@ def footer():
     return f"""</main>
 <footer class="site-footer on-dark">
 <div class="wrap footer-grid">
-<div><p class="footer-brand">{E(SITE_NAME)}</p><p>{E(TAGLINE)}</p></div>
+<div><p class="footer-brand"><img src="/assets/logo/head-light.svg" alt="" width="31" height="40"><span>{E(SITE_NAME)}</span></p><p>{E(TAGLINE)}</p></div>
 <div><h2>Explore</h2><ul>{explore}</ul></div>
 <div><h2>Information</h2><ul>{info}</ul></div>
 <div><h2>Newsletter</h2><p>The Jacklers Brief</p>{signup("nl-footer")}</div>
@@ -219,7 +222,7 @@ def text_page(path, title, lead, desc, paras):
 
 
 def not_found():
-    body = ('<div class="wrap" style="padding-top:5rem;padding-bottom:6rem"><h1 style="font-size:clamp(2.4rem,6vw,4rem);margin-bottom:1rem">Page not found</h1>'
+    body = ('<div class="wrap" style="padding-top:5rem;padding-bottom:6rem"><img src="/assets/logo/jackal-dark.svg" alt="" width="240" height="148" style="margin-bottom:2rem"><h1 style="font-size:clamp(2.4rem,6vw,4rem);margin-bottom:1rem">Page not found</h1>'
             '<p style="max-width:40ch;color:var(--ink-soft)">That address does not exist on Jacklers. Try the menu, or go back to the homepage.</p>'
             '<p><a class="btn" href="/">Go to the homepage</a></p></div>')
     html = head("Page not found", "This page does not exist.", "/404", noindex=True) + header("/404") + body + footer()
@@ -237,11 +240,6 @@ def write_static():
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls + "</urlset>\n")
     with open(os.path.join(ROOT, "robots.txt"), "w", encoding="utf-8") as f:
         f.write(f"User-agent: *\nAllow: /\nDisallow: /admin/\n\nSitemap: {BASE_URL}/sitemap.xml\n")
-    os.makedirs(os.path.join(ROOT, "assets"), exist_ok=True)
-    with open(os.path.join(ROOT, "assets", "favicon.svg"), "w", encoding="utf-8") as f:
-        f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#0A1120"/>'
-                '<text x="32" y="46" text-anchor="middle" font-family="Georgia,serif" font-size="42" fill="#F6F3EE">J</text>'
-                '<rect x="14" y="52" width="36" height="3" fill="#A81F2B"/></svg>')
 
 
 def home():
@@ -318,7 +316,7 @@ def write_shell():
     """Template used by build.js (on Vercel) to build every article page with the same header and footer as the rest of the site."""
     top = ('<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n'
            '<meta name="viewport" content="width=device-width, initial-scale=1">\n{{META}}\n'
-           '<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">\n' + FONTS +
+           '<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">\n<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">\n' + FONTS +
            '\n<link rel="stylesheet" href="/assets/css/site.css">\n</head>\n')
     os.makedirs(os.path.join(ROOT, "templates"), exist_ok=True)
     with open(os.path.join(ROOT, "templates", "article-shell.html"), "w", encoding="utf-8") as f:
