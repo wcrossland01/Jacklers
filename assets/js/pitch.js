@@ -372,7 +372,9 @@
             var forced = null;
             if (sim.d.chain && sim.d.chain.length) forced = findRole(a, sim.d.chain.shift());   // mid backline move: next man in the chain
             else if (c.role === 8) forced = phaseTarget(c);                                     // scrum-half: forwards most phases, backline sometimes
-            if (forced || sim.d.forcePass || rand() < (toGo < 15 ? 0.55 : TUNE.pass)) { if (!tryPass(c, forced)) sim.dec = R(0.2, 0.45); }
+            var basePass = toGo < 15 ? 0.55 : TUNE.pass;
+            var passChance = c.role < 8 ? basePass * 0.3 : basePass;   // a forward on the carry drives into contact rather than looking for another inside pass
+            if (forced || sim.d.forcePass || rand() < passChance) { if (!tryPass(c, forced)) sim.dec = R(0.2, 0.45); }
             else sim.dec = R(0.4, 0.8);
           }
         }
@@ -693,12 +695,17 @@
     }
     // players (labelled with their shirt number, 1-15)
     ctx.font = '700 ' + Math.max(6.5, r * 1.15).toFixed(1) + 'px "Hanken Grotesk", Arial, sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineCap = 'round';
+    var CAPS = { 0: [4, 5, 15], 1: [4, 6, 13] };   // jersey numbers who wear a scrum cap, per team
     for (i = 0; i < sim.players.length; i++) {
       var pl = sim.players[i]; p = lay.P(pl.x, pl.y);
       ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, 6.2832);
       ctx.fillStyle = pl.team === 0 ? COL.red : COL.white; ctx.fill();
       ctx.lineWidth = 1; ctx.strokeStyle = pl.team === 0 ? 'rgba(255,255,255,0.35)' : 'rgba(10,17,32,0.45)'; ctx.stroke();
+      if (CAPS[pl.team].indexOf(pl.role + 1) > -1) {   // scrum cap: a padded band over the crown
+        ctx.beginPath(); ctx.arc(p[0], p[1], r * 0.82, Math.PI * 1.08, Math.PI * 1.92);
+        ctx.lineWidth = Math.max(1.2, r * 0.4); ctx.strokeStyle = 'rgba(17,24,39,0.88)'; ctx.stroke();
+      }
       ctx.fillStyle = pl.team === 0 ? 'rgba(255,255,255,0.92)' : 'rgba(10,17,32,0.85)';
       ctx.fillText(String(pl.role + 1), p[0], p[1] + r * 0.05);
     }
