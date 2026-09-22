@@ -14,7 +14,7 @@
 
   var LEN = 120, WID = 70, MID = 60, TRY0 = 10, TRY1 = 110;
   // Tuning knobs for the match (all probabilities per event)
-  var TUNE = { sway: 0.75, hurry: 1.6, hustle: 1.6, recover: 1.4, recoverFrom: 6, recoverSlope: 0.04, teamRun: 5, teamRunMax: 14, missRedZone: 0.7, lineDepth: 9.5, lineSpeed: 1.6, momentum: 2.6, kickOwn: 0.32, kickOpp: 0.12, pass: 0.74, missTackle: 0.4, knockOn: 0.006, turnover: 0.05, penalty: 0.02, box: 0.16, carrierSpeed: 1.1, breakRun: 1.4, wideChance: 0.6, pauseDur: 0.55, shapeDrift: 3.6 };
+  var TUNE = { sway: 0.75, hurry: 1.6, hustle: 1.6, recover: 1.4, recoverFrom: 6, recoverSlope: 0.04, teamRun: 5, teamRunMax: 14, missRedZone: 0.16, lineDepth: 9.5, lineSpeed: 1.6, momentum: 2.6, kickOwn: 0.32, kickOpp: 0.12, pass: 0.74, missTackle: 0.4, knockOn: 0.006, turnover: 0.05, penalty: 0.02, box: 0.16, carrierSpeed: 1.1, breakRun: 1.4, wideChance: 0.6, pauseDur: 0.55, shapeDrift: 3.6 };
   var COL = { red: '#D0343F', white: '#F6F3EE', ball: '#E8B84A', ref: '#6FD3A2', line: '246,243,238' };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -29,7 +29,7 @@
 
     var sim = {
       players: [], teams: [[], []], ref: { x: 60, y: 22, vx: 0, vy: 0, tx: 60, ty: 22 },
-      ball: { x: 60, y: 35, h: 0, owner: null, fly: null },
+      ball: { x: 60, y: 35, h: 0, owner: null, fly: null }, ballTrail: [],
       phase: 'kickoff_setup', pt: 0, poss: 0, score: [0, 0], flip: 1, time: 0, nextHalf: 140, seq: 0,
       pulses: [], carrier: null, anchor: { x: 60, y: 35 }, dec: 0, d: {}, changed: false,
       stats: { passes: 0, kicks: 0, chips: 0, tackles: 0, tries: 0, offloads: 0 }
@@ -343,10 +343,14 @@
         }
         sim.teams[def].forEach(function (q) {
           q.hurry = (q.x - c.x) * d < 0.5;
-          if (q.hurry) {                                            // beaten: turn and cut the runner off
-            var gap = hyp(q.x - c.x, q.y - c.y), T = clamp(gap / (q.max * TUNE.hurry), 0.3, 3);
-            go(q, c.x + c.vx * T + d * 1.5, c.y + c.vy * T);
+          if (!q.hurry) return;
+          if (q.role === 10 || q.role === 13 || q.role === 14) {   // back three: hold depth and scan across rather than sprinting flat at the carrier
+            var covDepth = q.role === 14 ? 14 : 8, scanY = q.y + clamp(c.y - q.y, -6, 6) * 0.5;
+            go(q, c.x + d * covDepth, clamp(scanY, 4, WID - 4));
+            return;
           }
+          var gap = hyp(q.x - c.x, q.y - c.y), T = clamp(gap / (q.max * TUNE.hurry), 0.3, 3);   // beaten: turn and cut the runner off
+          go(q, c.x + c.vx * T + d * 1.5, c.y + c.vy * T);
         });
         var chaser = nearest(sim.teams[def], c.x, c.y);
         if (hyp(chaser.x - c.x, chaser.y - c.y) < 5) go(chaser, c.x + d * 0.6, c.y);
@@ -368,6 +372,10 @@
               sim.d.kickChecked = true;
               var kp = toGo > 18 ? (zone < 8 ? TUNE.kickOwn : TUNE.kickOpp) : 0;
               if (rand() < kp) { startKick(c, false, toGo < 38 ? 'chip' : zone < 6 ? (rand() < 0.75 ? 'long' : 'chip') : (rand() < 0.6 ? 'chip' : 'long')); return; }
+            }
+            if (!sim.d.forcePass && !sim.d.kickChecked && c.role === 14 && toGo > 78 && hyp(chaser.x - c.x, chaser.y - c.y) < 6) {   // full-back pinned deep in his own 22 under pressure: clear it rather than running it out
+              sim.d.kickChecked = true;
+              if (rand() < TUNE.kickOwn) { startKick(c, false, 'long'); return; }
             }
             var forced = null;
             if (sim.d.chain && sim.d.chain.length) forced = findRole(a, sim.d.chain.shift());   // mid backline move: next man in the chain
@@ -597,6 +605,13 @@
         b.x = o.x + fx * 0.9; b.y = o.y + fy * 0.9; b.h = 0;
       }
       b.x = clamp(b.x, 0, LEN); b.y = clamp(b.y, 0, WID);
+      if (b.fly) {   // a short fading trail behind the ball while it's in flight, so a pass or kick is easy to follow through a crowded breakdown
+        sim.ballTrail.push({ x: b.x, y: b.y, h: b.h, t: sim.time });
+        var trailCut = sim.time - 0.35;
+        while (sim.ballTrail.length && sim.ballTrail[0].t < trailCut) sim.ballTrail.shift();
+      } else if (sim.ballTrail.length) {
+        sim.ballTrail.length = 0;
+      }
       for (i = sim.pulses.length - 1; i >= 0; i--) { sim.pulses[i].t += dt; if (sim.pulses[i].t > sim.pulses[i].dur) sim.pulses.splice(i, 1); }
       for (i = 0; i < sim.players.length; i++) { var q = sim.players[i]; q.x = clamp(q.x, 0.4, LEN - 0.4); q.y = clamp(q.y, 0.4, WID - 0.4); }
     };
@@ -718,6 +733,14 @@
     p = lay.P(sim.ref.x, sim.ref.y); var rr = r * 1.15;
     ctx.beginPath(); ctx.moveTo(p[0], p[1] - rr); ctx.lineTo(p[0] + rr, p[1]); ctx.lineTo(p[0], p[1] + rr); ctx.lineTo(p[0] - rr, p[1]); ctx.closePath();
     ctx.fillStyle = COL.ref; ctx.fill(); ctx.strokeStyle = 'rgba(10,17,32,0.55)'; ctx.lineWidth = 1; ctx.stroke();
+    // ball trail: a short fading arc of dots behind the ball while it's in flight
+    if (sim.ballTrail && sim.ballTrail.length > 1) {
+      for (i = 0; i < sim.ballTrail.length - 1; i++) {
+        var tp = sim.ballTrail[i], tu = clamp(1 - (sim.time - tp.t) / 0.35, 0, 1), tc = lay.P(tp.x, tp.y);
+        ctx.beginPath(); ctx.arc(tc[0], tc[1] - tp.h * s * 0.55, r * 0.34 * tu, 0, 6.2832);
+        ctx.fillStyle = 'rgba(232,184,74,' + (0.4 * tu) + ')'; ctx.fill();
+      }
+    }
     // ball (with shadow when kicked or passed)
     var b = sim.ball; p = lay.P(b.x, b.y);
     var lift = b.h * s * 0.55, ang = Math.atan2(lay.vertical ? 1 : 0.2, lay.vertical ? 0.2 : 1);
