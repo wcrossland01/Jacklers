@@ -71,7 +71,7 @@
         if (p.role === 12) { go(p, ax - d * (4.6 + p.jx * 0.3), ay + os * (17.5 + p.jy * 0.6)); return; }       // 13 outside centre: drifts wider
         if (p.role === 10) { go(p, ax - d * (5.5 + p.jx * 0.3), clamp(3 + p.jy, 1.5, WID / 2 - 1)); return; }   // 11 left wing: holds the near touchline
         if (p.role === 13) { go(p, ax - d * (5.5 + p.jx * 0.3), clamp(WID - 3 + p.jy, WID / 2 + 1, WID - 1.5)); return; } // 14 right wing: holds the far touchline
-        if (p.role === 14) { go(p, ax - d * (11 + p.jy * 0.4), clamp(WID / 2 + (ay - WID / 2) * 0.3 + p.jx * 3, 6, WID - 6)); return; } // 15 full-back: trails, covering
+        if (p.role === 14) { go(p, ax - d * (21 + p.jy * 0.6), clamp(WID / 2 + (ay - WID / 2) * 0.15 + p.jx * 4, 8, WID - 8)); return; } // 15 full-back: stays deep, joins the line only when the ball actually reaches him
         if (p.role < 5) { go(p, ax - d * (1.6 + (p.role % 3) * 1.1 + p.jx * 0.25), ay + (p.role - 2) * 1.9 + p.jy * 0.35); return; }      // tight five: hug the ball
         go(p, ax - d * (3.6 + (p.role - 5) * 1.3 + p.jx * 0.3), ay + (p.role - 6) * 4.4 * os * 0.4 + p.jy * 0.45);                        // 6/7/8: loose forwards link wider
       });
@@ -88,7 +88,7 @@
         go(p, lineX + da * (((i % 2) * 0.8) + p.jx * 0.15), clamp(ay + (u - 0.5) * span, 3, WID - 3));
       });
       back.forEach(function (p) {
-        if (p.role === 14) { go(p, lineX + da * 15, clamp(ay + (ay < WID / 2 ? 6 : -6), 8, WID - 8)); return; }   // 15 full-back: deepest, sweeps behind
+        if (p.role === 14) { go(p, lineX + da * 20, clamp(ay + (ay < WID / 2 ? 6 : -6), 8, WID - 8)); return; }   // 15 full-back: deepest, sweeps behind
         var side = p.role === 10 ? -1 : 1;                                                                        // 11 covers the left edge, 14 the right
         go(p, lineX + da * 9, clamp(WID / 2 + side * 22, 4, WID - 4));
       });
@@ -372,7 +372,9 @@
             var forced = null;
             if (sim.d.chain && sim.d.chain.length) forced = findRole(a, sim.d.chain.shift());   // mid backline move: next man in the chain
             else if (c.role === 8) forced = phaseTarget(c);                                     // scrum-half: forwards most phases, backline sometimes
-            if (forced || sim.d.forcePass || rand() < (toGo < 15 ? 0.55 : TUNE.pass)) { if (!tryPass(c, forced)) sim.dec = R(0.2, 0.45); }
+            var basePass = toGo < 15 ? 0.55 : TUNE.pass;
+            var passChance = c.role < 8 ? basePass * 0.3 : basePass;   // a forward on the carry drives into contact rather than looking for another inside pass
+            if (forced || sim.d.forcePass || rand() < passChance) { if (!tryPass(c, forced)) sim.dec = R(0.2, 0.45); }
             else sim.dec = R(0.4, 0.8);
           }
         }
@@ -693,12 +695,17 @@
     }
     // players (labelled with their shirt number, 1-15)
     ctx.font = '700 ' + Math.max(6.5, r * 1.15).toFixed(1) + 'px "Hanken Grotesk", Arial, sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineCap = 'round';
+    var CAPS = { 0: [4, 5, 15], 1: [4, 6, 13] };   // jersey numbers who wear a scrum cap, per team
     for (i = 0; i < sim.players.length; i++) {
       var pl = sim.players[i]; p = lay.P(pl.x, pl.y);
       ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, 6.2832);
       ctx.fillStyle = pl.team === 0 ? COL.red : COL.white; ctx.fill();
       ctx.lineWidth = 1; ctx.strokeStyle = pl.team === 0 ? 'rgba(255,255,255,0.35)' : 'rgba(10,17,32,0.45)'; ctx.stroke();
+      if (CAPS[pl.team].indexOf(pl.role + 1) > -1) {   // scrum cap: a padded band over the crown
+        ctx.beginPath(); ctx.arc(p[0], p[1], r * 0.82, Math.PI * 1.08, Math.PI * 1.92);
+        ctx.lineWidth = Math.max(1.2, r * 0.4); ctx.strokeStyle = 'rgba(17,24,39,0.88)'; ctx.stroke();
+      }
       ctx.fillStyle = pl.team === 0 ? 'rgba(255,255,255,0.92)' : 'rgba(10,17,32,0.85)';
       ctx.fillText(String(pl.role + 1), p[0], p[1] + r * 0.05);
     }
