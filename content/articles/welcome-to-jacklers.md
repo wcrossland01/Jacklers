@@ -1,11 +1,10 @@
 ---
 title: Welcome to Jacklers
 slug: welcome-to-jacklers
-status: draft
+status: published
 date: 2026-09-21
 author: Admin
 standfirst: Who? What? Why?
-heroImage: /images/articles/welcome-to-jacklers-1790087863907.jpg
 ---
 
 ## Welcome to Jacklers
