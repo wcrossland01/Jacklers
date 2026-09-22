@@ -21,6 +21,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 NAV = [
     ("Home", "/"),
     ("Articles", "/articles/"),
+    ("Match Centre", "/match/"),
     ("Community", "/community/"),
     ("Newsletter", "/newsletter/"),
 ]
@@ -279,6 +280,54 @@ def articles_page():
     build_page("/articles/", "Articles", "Rugby journalism and analysis from Jacklers. The first stories are coming soon.", body)
 
 
+def match_page():
+    scoreboard = (
+        '<div class="mc-board">'
+        '<div class="mc-board__team"><span data-mc="home-name"></span><span class="mc-board__score" data-mc="home-score">0</span></div>'
+        '<div class="mc-board__mid"><span class="mc-board__clock" data-mc="clock">00:00</span><span class="mc-board__half" data-mc="half">H1</span></div>'
+        '<div class="mc-board__team mc-board__team--away"><span class="mc-board__score" data-mc="away-score">0</span><span data-mc="away-name"></span></div>'
+        '</div>'
+    )
+    controls = (
+        '<div class="mc-controls">'
+        '<button type="button" class="btn" data-mc="play">Pause</button>'
+        '<button type="button" class="btn btn--quiet" data-mc="speed">1&times;</button>'
+        '<button type="button" class="btn btn--quiet" data-mc="restart">Restart</button>'
+        '<div class="mc-poss"><span data-mc="poss-home">50%</span>'
+        '<span class="mc-poss__bar"><span class="mc-poss__fill" data-mc="poss-bar-home" style="width:50%"></span></span>'
+        '<span data-mc="poss-away">50%</span></div>'
+        '</div>'
+    )
+    tactics = (
+        '<div class="mc-tactics">'
+        '<label>Home mentality<select data-mc="mentality-home">'
+        '<option value="attack">Attack</option><option value="balanced" selected>Balanced</option><option value="defend">Defend</option>'
+        '</select></label>'
+        '<label>Away mentality<select data-mc="mentality-away">'
+        '<option value="attack">Attack</option><option value="balanced" selected>Balanced</option><option value="defend">Defend</option>'
+        '</select></label>'
+        '</div>'
+    )
+    banner = (
+        '<div class="mc-banner" data-mc="banner" hidden>'
+        '<p class="mc-banner__title">TRY!</p><p class="mc-banner__sub"></p>'
+        '</div>'
+    )
+    body = page_head("Match Centre", "A simulated rugby union match, playing out phase by phase in real time.")
+    body += block(
+        '<div class="mc" id="match-centre">'
+        '<div class="mc__main">' + scoreboard +
+        '<p class="mc__phase" data-mc="phase">PHASE 1 &mdash; KICK-OFF</p>' +
+        '<div class="mc__canvaswrap"><canvas id="match-canvas" aria-label="Live match pitch"></canvas>' + banner + '</div>' +
+        controls + tactics +
+        '</div>'
+        '<aside class="mc__feed"><h2>Commentary</h2><ul class="mc-feed" data-mc="feed"></ul></aside>'
+        '</div>'
+    )
+    build_page("/match/", "Match Centre", "Watch a simulated rugby union match play out phase by phase, with live commentary.",
+               body, scripts='<script type="module" src="/assets/js/match/main.js"></script>\n')
+
+
 def community():
     later = "".join(f"<li>{i}</li>" for i in ["Comments on articles", "Reader accounts", "Discussions and debates"])
     body = page_head("Community", "A place for readers to talk rugby.")
@@ -328,6 +377,7 @@ def write_shell():
 def main():
     home()
     articles_page()
+    match_page()
     community()
     newsletter_page()
     write_shell()

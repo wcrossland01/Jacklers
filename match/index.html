@@ -3,22 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Community | Jacklers</title>
-<meta name="description" content="Community features from Jacklers are coming soon.">
-<link rel="canonical" href="https://jacklers.co.uk/community/">
+<title>Match Centre | Jacklers</title>
+<meta name="description" content="Watch a simulated rugby union match play out phase by phase, with live commentary.">
+<link rel="canonical" href="https://jacklers.co.uk/match/">
 
 <meta name="theme-color" content="#0A1120">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Jacklers">
 <meta property="og:locale" content="en_GB">
-<meta property="og:title" content="Community | Jacklers">
-<meta property="og:description" content="Community features from Jacklers are coming soon.">
-<meta property="og:url" content="https://jacklers.co.uk/community/">
+<meta property="og:title" content="Match Centre | Jacklers">
+<meta property="og:description" content="Watch a simulated rugby union match play out phase by phase, with live commentary.">
+<meta property="og:url" content="https://jacklers.co.uk/match/">
 <meta property="og:image" content="https://jacklers.co.uk/assets/og-default.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://jacklers.co.uk/assets/og-default.png">
-<meta name="twitter:title" content="Community | Jacklers">
-<meta name="twitter:description" content="Community features from Jacklers are coming soon.">
+<meta name="twitter:title" content="Match Centre | Jacklers">
+<meta name="twitter:description" content="Watch a simulated rugby union match play out phase by phase, with live commentary.">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
@@ -30,7 +30,7 @@
 <header class="site-header on-dark">
 <div class="wrap header-row">
 <a class="brand" href="/"><img src="/assets/logo/lockup-light.svg" alt="Jacklers" width="178" height="44"></a>
-<nav class="nav" id="site-nav" aria-label="Primary"><ul><li><a href="/">Home</a></li><li><a href="/articles/">Articles</a></li><li><a href="/match/">Match Centre</a></li><li><a href="/community/" aria-current="page">Community</a></li><li class="nav__cta"><a href="/newsletter/">Newsletter</a></li></ul></nav>
+<nav class="nav" id="site-nav" aria-label="Primary"><ul><li><a href="/">Home</a></li><li><a href="/articles/">Articles</a></li><li><a href="/match/" aria-current="page">Match Centre</a></li><li><a href="/community/">Community</a></li><li class="nav__cta"><a href="/newsletter/">Newsletter</a></li></ul></nav>
 <div class="header-tools">
 <a class="icon-btn" href="/search/" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></a>
 <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
@@ -39,21 +39,9 @@
 </header>
 <main id="main">
 <section class="page-head on-dark"><div class="wrap">
-<h1>Community</h1><p>A place for readers to talk rugby.</p>
+<h1>Match Centre</h1><p>A simulated rugby union match, playing out phase by phase in real time.</p>
 </div></section>
-<section class="block "><div class="wrap"><div class="empty empty--wide"><svg class="empty__icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14 6v20M34 6v20M14 26h20M24 26v16M17 42h14"/></svg><div><p class="empty__title">Comments are coming soon.</p><p class="empty__text">There are no accounts, comments or user posts yet.</p></div></div><h2 style="font-size:1.5rem;margin-top:2rem">What may come later</h2><ul class="plain-list"><li>Comments on articles</li><li>Reader accounts</li><li>Discussions and debates</li></ul></div></section>
-<section class="newsletter on-dark" aria-labelledby="nl-title-nl-main">
-<div class="wrap">
-<div><h2 id="nl-title-nl-main">The Jacklers Brief</h2>
-<p>Sharp rugby analysis, emerging talent and the stories behind the numbers.</p></div>
-<form class="signup" data-newsletter novalidate>
-<label class="visually-hidden" for="nl-main">Email address</label>
-<input id="nl-main" type="email" name="email" placeholder="Email address" autocomplete="email" required>
-<button class="btn" type="submit">Subscribe</button>
-<p class="signup__msg" role="status"></p>
-</form>
-</div>
-</section>
+<section class="block "><div class="wrap"><div class="mc" id="match-centre"><div class="mc__main"><div class="mc-board"><div class="mc-board__team"><span data-mc="home-name"></span><span class="mc-board__score" data-mc="home-score">0</span></div><div class="mc-board__mid"><span class="mc-board__clock" data-mc="clock">00:00</span><span class="mc-board__half" data-mc="half">H1</span></div><div class="mc-board__team mc-board__team--away"><span class="mc-board__score" data-mc="away-score">0</span><span data-mc="away-name"></span></div></div><p class="mc__phase" data-mc="phase">PHASE 1 &mdash; KICK-OFF</p><div class="mc__canvaswrap"><canvas id="match-canvas" aria-label="Live match pitch"></canvas><div class="mc-banner" data-mc="banner" hidden><p class="mc-banner__title">TRY!</p><p class="mc-banner__sub"></p></div></div><div class="mc-controls"><button type="button" class="btn" data-mc="play">Pause</button><button type="button" class="btn btn--quiet" data-mc="speed">1&times;</button><button type="button" class="btn btn--quiet" data-mc="restart">Restart</button><div class="mc-poss"><span data-mc="poss-home">50%</span><span class="mc-poss__bar"><span class="mc-poss__fill" data-mc="poss-bar-home" style="width:50%"></span></span><span data-mc="poss-away">50%</span></div></div><div class="mc-tactics"><label>Home mentality<select data-mc="mentality-home"><option value="attack">Attack</option><option value="balanced" selected>Balanced</option><option value="defend">Defend</option></select></label><label>Away mentality<select data-mc="mentality-away"><option value="attack">Attack</option><option value="balanced" selected>Balanced</option><option value="defend">Defend</option></select></label></div></div><aside class="mc__feed"><h2>Commentary</h2><ul class="mc-feed" data-mc="feed"></ul></aside></div></div></section>
 </main>
 <footer class="site-footer on-dark">
 <div class="wrap footer-grid">
@@ -70,5 +58,6 @@
 <div class="wrap footer-base">&copy; <span data-year>2026</span> Jacklers. Independent rugby publication in development.</div>
 </footer>
 <script src="/assets/js/site.js" defer></script>
+<script type="module" src="/assets/js/match/main.js"></script>
 </body>
 </html>
